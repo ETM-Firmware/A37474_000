@@ -323,6 +323,12 @@ typedef struct {
   unsigned int fault_holdoff_count;             // This is a counter for the current limit fault holdoff
   unsigned int mux_fault;
   
+  unsigned int previous_0x0A_val;
+  unsigned int previous_0x0B_val;
+  unsigned int previous_0x0C_val;
+  unsigned int previous_0x0D_val;
+  
+  
   volatile unsigned char control_config;        // This indicates when all set values from the CAN interface have been received
 
   unsigned int state_message;                   // This is a state message for the modbus module

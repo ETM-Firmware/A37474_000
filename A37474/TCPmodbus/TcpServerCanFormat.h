@@ -83,7 +83,7 @@ extern int  TcpCanGotCommand(void); // check whether there is a command in input
 //extern signed char CanBufferFull(unsigned char input);  // check whether input or output buffer is full
 extern void PutResponseToBuffer(unsigned char length, unsigned char * data);
 
-extern void GenericTCPServer(void);
+extern void GenericTCPServer(unsigned int resetTCP);
 
 extern unsigned int GetEthernetResetEnable(void);
 

@@ -344,7 +344,7 @@ void TCPmodbus_init(IPCONFIG* ip_config)
 //
 // Need to call this task periodically
 //
-void TCPmodbus_task(void)
+void TCPmodbus_task(unsigned int reset_TCP)
 {
   static DWORD t = 0;
   _LATB8 = 1;
@@ -372,7 +372,7 @@ void TCPmodbus_task(void)
 #endif
 
 #ifdef STACK_USE_GENERIC_TCP_SERVER_EXAMPLE 
-  GenericTCPServer();
+  GenericTCPServer(reset_TCP);
   DoTcpCanCommand();
 #endif
 

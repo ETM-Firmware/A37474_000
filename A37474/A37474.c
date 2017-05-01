@@ -85,6 +85,7 @@ void CheckDeviceFailure(MODBUS_MESSAGE * ptr);
 void ClearModbusMessage(MODBUS_MESSAGE * ptr);
 unsigned int LookForMessage (void);
 unsigned int checkCRC(unsigned char * ptr, unsigned int size);
+void SetCustomIP(void);
 
 #endif
 
@@ -615,7 +616,8 @@ void InitializeA37474(void) {
   //ip_config.remote_ip_addr = 0x0F46A8C0;  // 192.168.70.15
   //ip_config.ip_addr        = 0x6346A8C0;  // 192.168.70.99
 
-
+  
+  
   if ((ip_config.remote_ip_addr == 0xFFFFFFFF) || (ip_config.remote_ip_addr == 0x00000000)) {
     ip_config.remote_ip_addr = DEFAULT_REMOTE_IP_ADDRESS;
   }
@@ -844,6 +846,28 @@ void InitializeA37474(void) {
 }
 
 
+void SetCustomIP(void) {
+  IPCONFIG ip_config;
+  
+    //Format:  192.168.70.99
+    //          A   B  C  D 
+
+  ip_config.ip_addr =  ((unsigned long)modbus_slave_hold_reg_0x0D << 24) & 0xFF000000;
+  ip_config.ip_addr += ((unsigned long)modbus_slave_hold_reg_0x0C << 16) & 0x00FF0000;
+  ip_config.ip_addr += ((unsigned long)modbus_slave_hold_reg_0x0B << 8) & 0x0000FF00;
+  ip_config.ip_addr += (unsigned long)modbus_slave_hold_reg_0x0A & 0x000000FF;
+  
+  if ((ip_config.ip_addr == 0xFFFFFFFF) || (ip_config.ip_addr == 0x00000000)) {
+    ip_config.ip_addr = DEFAULT_IP_ADDRESS;
+  }
+  ip_config.remote_ip_addr = DEFAULT_REMOTE_IP_ADDRESS;
+      
+  TCPmodbus_task(1);  //close socket
+
+  TCPmodbus_init(&ip_config);
+}
+
+
 void DoStartupLEDs(void) {
   switch (((global_data_A37474.run_time_counter >> 4) & 0b11)) {
     
@@ -1052,7 +1076,7 @@ unsigned int CheckPreHVFault(void) {
 
 void DoA37474(void) {
 
-  TCPmodbus_task();
+  TCPmodbus_task(0);
     
 #ifdef __CAN_ENABLED
   ETMCanSlaveDoCan();
@@ -1274,6 +1298,18 @@ void DoA37474(void) {
       global_data_A37474.watchdog_set_mode = WATCHDOG_MODE_0;
     }
     
+    if ((global_data_A37474.previous_0x0A_val != modbus_slave_hold_reg_0x0A) ||
+        (global_data_A37474.previous_0x0B_val != modbus_slave_hold_reg_0x0B) ||
+        (global_data_A37474.previous_0x0C_val != modbus_slave_hold_reg_0x0C) ||
+        (global_data_A37474.previous_0x0D_val != modbus_slave_hold_reg_0x0D)) {
+      SetCustomIP();
+    }
+    
+    global_data_A37474.previous_0x0A_val = modbus_slave_hold_reg_0x0A;
+    global_data_A37474.previous_0x0B_val = modbus_slave_hold_reg_0x0B;
+    global_data_A37474.previous_0x0C_val = modbus_slave_hold_reg_0x0C;
+    global_data_A37474.previous_0x0D_val = modbus_slave_hold_reg_0x0D;
+    
 //    if (dac_resets_debug < global_data_A37474.watchdog_counter) {
 //      dac_resets_debug++;
 //    }
@@ -1383,6 +1419,11 @@ void DoA37474(void) {
 #ifdef __ETHERNET_REFERENCE
     //ETMAnalogSetOutput(&global_data_A37474.analog_output_high_voltage, modbus_slave_hold_reg_0x13);
         
+    modbus_slave_hold_reg_0x0A;
+    modbus_slave_hold_reg_0x0B;
+    modbus_slave_hold_reg_0x0C;
+    modbus_slave_hold_reg_0x0D;
+    
 #endif
     
     

@@ -147,7 +147,7 @@ signed char tcp_can_output_put_ptr;  // pointer to put data into buffer
   Returns:
   	None
   ***************************************************************************/
-void GenericTCPServer(void)
+void GenericTCPServer(unsigned int resetTCP)
 {
 	WORD wMaxGet, wMaxPut;
 	int buf_room;
@@ -159,6 +159,10 @@ void GenericTCPServer(void)
 		SM_LISTENING,
         SM_CLOSING,
 	} TCPServerState = SM_HOME;
+    
+    if (resetTCP) {
+      TCPServerState = SM_CLOSING;
+    }
 
 	switch(TCPServerState)
 	{

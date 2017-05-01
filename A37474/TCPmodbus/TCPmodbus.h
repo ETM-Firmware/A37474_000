@@ -27,7 +27,7 @@ typedef struct {
 
 void TCPmodbus_init(IPCONFIG* ip_config);
 
-void TCPmodbus_task(void);
+void TCPmodbus_task(unsigned int reset_TCP);
 
 unsigned int SendCalibrationDataToGUI(unsigned int index, unsigned int scale, unsigned int offset);
 
