@@ -498,6 +498,7 @@ void CanProcessCommand(unsigned char length, unsigned char * data)
             set_value  = (unsigned int)data[5] << 8;
             set_value += (unsigned int)data[4];
             global_data_A37474.ethernet_htr_ref = set_value;
+            ETMEEPromWriteWord(0x680, set_value);
 //            if (set_value <= MAX_PROGRAM_HTR_VOLTAGE)
 //            {                        
 //	        	global_data_A37474.heater_voltage_target = set_value;
@@ -516,6 +517,7 @@ void CanProcessCommand(unsigned char length, unsigned char * data)
             set_value  = (unsigned int)data[5] << 8;
             set_value += (unsigned int)data[4];
             global_data_A37474.ethernet_top_ref = set_value;
+            ETMEEPromWriteWord(0x681, set_value);
 //            if (set_value <= TOP_VOLTAGE_MAX_SET_POINT)  
 //            {    
 //            	ETMAnalogSetOutput(&global_data_A37474.analog_output_top_voltage, set_value);                    
@@ -534,6 +536,7 @@ void CanProcessCommand(unsigned char length, unsigned char * data)
             set_value  = (unsigned int)data[5] << 8;
             set_value += (unsigned int)data[4];
             global_data_A37474.ethernet_hv_ref = set_value;
+            ETMEEPromWriteWord(0x682, set_value);
 //            if (set_value >= HIGH_VOLTAGE_MIN_SET_POINT && set_value <= HIGH_VOLTAGE_MAX_SET_POINT)  
 //            {            
 //            	ETMAnalogSetOutput(&global_data_A37474.analog_output_high_voltage, set_value);                    

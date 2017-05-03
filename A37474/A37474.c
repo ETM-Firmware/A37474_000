@@ -642,6 +642,15 @@ void InitializeA37474(void) {
 #endif
 
   ADCConfigure();
+  
+  
+#ifdef __ETHERNET_REFERENCE
+    
+  global_data_A37474.ethernet_hv_ref  = ETMEEPromReadWord(0x682);
+  global_data_A37474.ethernet_top_ref = ETMEEPromReadWord(0x681);
+  global_data_A37474.ethernet_htr_ref = ETMEEPromReadWord(0x680);  
+  
+#endif
 
   // Initialize off board ADC Inputs
   ETMAnalogInitializeInput(&global_data_A37474.input_adc_temperature,
