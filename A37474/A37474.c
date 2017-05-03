@@ -630,7 +630,7 @@ void InitializeA37474(void) {
 #endif
   TCPmodbus_init(&ip_config);
 
-#ifdef __MODE_MODBUS_INTERFACE
+#ifdef __MODE_MODBUS_MONITOR
   ETMModbusInit();
 #endif
   
@@ -1086,7 +1086,7 @@ void DoA37474(void) {
   ClrWdt();
 #endif
   
-#ifdef __MODE_MODBUS_INTERFACE
+#ifdef __MODE_MODBUS_MONITOR
   ETMModbusSlaveDoModbus();
 #endif
 
@@ -1175,7 +1175,8 @@ void DoA37474(void) {
 #ifdef __ETHERNET_CONTROLS
    //set Reset bit from ethernet function     
     if (global_data_A37474.control_state != STATE_FAULT_WARMUP_HEATER_OFF) {
-      if (GetEthernetResetEnable()) {
+      if (global_data_A37474.ethernet_reset_cmd) {
+        global_data_A37474.ethernet_reset_cmd = 0;
         global_data_A37474.reset_active = 1;
       } else {
         global_data_A37474.reset_active = 0;
@@ -1298,17 +1299,17 @@ void DoA37474(void) {
       global_data_A37474.watchdog_set_mode = WATCHDOG_MODE_0;
     }
     
-    if ((global_data_A37474.previous_0x0A_val != modbus_slave_hold_reg_0x0A) ||
-        (global_data_A37474.previous_0x0B_val != modbus_slave_hold_reg_0x0B) ||
-        (global_data_A37474.previous_0x0C_val != modbus_slave_hold_reg_0x0C) ||
-        (global_data_A37474.previous_0x0D_val != modbus_slave_hold_reg_0x0D)) {
-      SetCustomIP();
-    }
-    
-    global_data_A37474.previous_0x0A_val = modbus_slave_hold_reg_0x0A;
-    global_data_A37474.previous_0x0B_val = modbus_slave_hold_reg_0x0B;
-    global_data_A37474.previous_0x0C_val = modbus_slave_hold_reg_0x0C;
-    global_data_A37474.previous_0x0D_val = modbus_slave_hold_reg_0x0D;
+//    if ((global_data_A37474.previous_0x0A_val != modbus_slave_hold_reg_0x0A) ||
+//        (global_data_A37474.previous_0x0B_val != modbus_slave_hold_reg_0x0B) ||
+//        (global_data_A37474.previous_0x0C_val != modbus_slave_hold_reg_0x0C) ||
+//        (global_data_A37474.previous_0x0D_val != modbus_slave_hold_reg_0x0D)) {
+//      SetCustomIP();
+//    }
+//    
+//    global_data_A37474.previous_0x0A_val = modbus_slave_hold_reg_0x0A;
+//    global_data_A37474.previous_0x0B_val = modbus_slave_hold_reg_0x0B;
+//    global_data_A37474.previous_0x0C_val = modbus_slave_hold_reg_0x0C;
+//    global_data_A37474.previous_0x0D_val = modbus_slave_hold_reg_0x0D;
     
 //    if (dac_resets_debug < global_data_A37474.watchdog_counter) {
 //      dac_resets_debug++;
@@ -1369,7 +1370,7 @@ void DoA37474(void) {
       timer_report = 0;
     }
     
-#ifdef __MODE_MODBUS_INTERFACE
+#ifdef __MODE_MODBUS_MONITOR
     modbus_slave_hold_reg_0x21 = global_data_A37474.input_htr_v_mon.reading_scaled_and_calibrated;
     modbus_slave_hold_reg_0x22 = global_data_A37474.input_htr_i_mon.reading_scaled_and_calibrated;
     modbus_slave_hold_reg_0x23 = global_data_A37474.input_top_v_mon.reading_scaled_and_calibrated;
@@ -1417,12 +1418,11 @@ void DoA37474(void) {
 #endif
 
 #ifdef __ETHERNET_REFERENCE
-    //ETMAnalogSetOutput(&global_data_A37474.analog_output_high_voltage, modbus_slave_hold_reg_0x13);
-        
-    modbus_slave_hold_reg_0x0A;
-    modbus_slave_hold_reg_0x0B;
-    modbus_slave_hold_reg_0x0C;
-    modbus_slave_hold_reg_0x0D;
+    
+    ETMAnalogSetOutput(&global_data_A37474.analog_output_high_voltage, global_data_A37474.ethernet_hv_ref);
+    ETMAnalogSetOutput(&global_data_A37474.analog_output_top_voltage, global_data_A37474.ethernet_top_ref);
+    global_data_A37474.heater_voltage_target = global_data_A37474.ethernet_htr_ref;
+
     
 #endif
     
@@ -2904,6 +2904,9 @@ void ProcessCommand (MODBUS_MESSAGE * ptr) {
       byte_index = ptr->data_address;
       ModbusSlaveHoldingRegister[byte_index] = ptr->write_value;
       ETMEEPromWriteWord(0x600 + byte_index, ptr->write_value);
+      if ((byte_index > 9) && (byte_index < 14)) {                     // If holding reg's 0x0A - 0x0D change
+        SetCustomIP();                                                 // IP address change was made
+      }
       break;
       
     default:

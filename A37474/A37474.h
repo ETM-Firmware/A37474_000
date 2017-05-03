@@ -306,7 +306,8 @@ typedef struct {
   unsigned int request_hv_enable;               // This indicates that hv_enable has been requested (either from CAN module or from discrete inputs depending upon configuration)
   unsigned int request_beam_enable;             // This indicates that beam_enable has been requested (either from CAN module or from discrete inputs depending upon configuration)
   unsigned int reset_active;                    // This indicates that reset has been requested (either from CAN module or from discrete inputs depending upon configuration)
-
+  unsigned int ethernet_reset_cmd;
+  
   unsigned int heater_start_up_attempts;        // This counts the number of times the heater has started up without successfully completing it's ramp up.
 
   unsigned int run_time_counter;                // This counts how long the unit has been running for.  It wraps every 11 minutes
@@ -337,9 +338,12 @@ typedef struct {
   unsigned int can_high_voltage_set_point;      // This is the high voltage set point set over the can interface (it is only used if can mode is selected)
   unsigned int can_pulse_top_set_point;         // This is the pulse top set point set over the can interface (it is only used if can mode is selected)
   unsigned int can_heater_voltage_set_point;    // This is the heater voltage set point set over the can interface (it is only used if can mode is selected)
+  
+  unsigned int ethernet_htr_ref;
+  unsigned int ethernet_top_ref;
+  unsigned int ethernet_hv_ref;
 
   unsigned int discrete_commands_always;
-  unsigned int pot_references_always;
   unsigned int analog_references_always;
   unsigned int modbus_controls_enabled;
   unsigned int modbus_references_enabled;

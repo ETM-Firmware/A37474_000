@@ -168,7 +168,8 @@
 #endif
 
 #ifdef __A37474_000
-#define __MODE_MODBUS_INTERFACE
+#define __MODE_ETHERNET_INTERFACE
+#define __MODE_MODBUS_MONITOR
 #define __OPTION_ENABLE_CAN
 #define OLL_PIN_CPU_HV_ENABLE_HV_ENABLED        1
 #define HEATER_RAMP_TIME                        30000
@@ -287,7 +288,9 @@
 #ifndef __MODE_CAN_INTERFACE
 #ifndef __MODE_DISCRETE_INTERFACE
 #ifndef __MODE_MODBUS_INTERFACE
+#ifndef __MODE_ETHERNET_INTERFACE
 #error "No reference Source Selected"
+#endif
 #endif
 #endif
 #endif
@@ -318,8 +321,13 @@
 #ifdef __MODE_MODBUS_INTERFACE
 #define __MODBUS_REFERENCE
 #define __MODBUS_CONTROLS
+#define __MODBUS_MONITOR
 #endif
 
+#ifdef __MODE_ETHERNET_INTERFACE
+#define __ETHERNET_REFERENCE
+#define __ETHERNET_CONTROLS
+#endif
 
 #ifdef __OPTION_ENABLE_CAN
 #define __CAN_ENABLED

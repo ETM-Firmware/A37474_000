@@ -373,33 +373,35 @@ void CanProcessCommand(unsigned char length, unsigned char * data)
 
     case SDO_IDX_RESET_CMD:
     	if (is_upload)
-            txData[4] = sdo_reset_cmd_active;
+            txData[4] = (unsigned char) global_data_A37474.reset_active & 0xff; //sdo_reset_cmd_active;
         else if (data[4] == 0 || data[4] == 0xff) {
 
       //  	if (!sdo_reset_cmd_active && data[4])  
-        	if (data[4]) sdo_logic_reset = 1;	 
-    		sdo_reset_cmd_active = data[4];	
-            if (sdo_reset_cmd_active)
-            	PIN_HV_ON_SERIAL = !OLL_SERIAL_ENABLE; // turn off hv when reset is active 
+        	if (data[4])  global_data_A37474.ethernet_reset_cmd = 1;          //sdo_logic_reset = 1;	 
+//    		sdo_reset_cmd_active = data[4];	
+//            if (sdo_reset_cmd_active)
+//            	PIN_HV_ON_SERIAL = !OLL_SERIAL_ENABLE; // turn off hv when reset is active 
         }
         // else	do nothing
         	
      break;
 
-#if 0  // NA for now  
+  
     case SDO_IDX_ZERO_HTD:
     	if (is_upload)
             txData[4] = sdo_htd_timer_reset;
         else if (data[4] == 0xff) {        
-          //	if (!sdo_htd_timer_reset) {
-    			sdo_htd_timer_reset = 0xff;	
-                software_skip_warmup = 1; 
-          //  } 
+//          //	if (!sdo_htd_timer_reset) {
+//    			sdo_htd_timer_reset = 0xff;	
+//                software_skip_warmup = 1; 
+//          //  } 
+          sdo_htd_timer_reset = 0xff;
+          global_data_A37474.heater_warm_up_time_remaining = 300;   //set remaining warmup to 3s
         }
         else
             sdo_htd_timer_reset = 0;	    
      break;
-#endif     
+     
      
     case SDO_IDX_HTR_CMD:
     	if (is_upload)
@@ -438,9 +440,12 @@ void CanProcessCommand(unsigned char length, unsigned char * data)
         else if (data[4] == 0 || data[4] == 0xff) {
 
           //	if (sdo_hv_enable != data[4]) { // only act when value changes
-            	if (data[4] && sdo_reset_cmd_active == 0)  PIN_HV_ON_SERIAL = OLL_SERIAL_ENABLE;
-                else if (data[4] == 0)		  			   PIN_HV_ON_SERIAL = !OLL_SERIAL_ENABLE;;	 // either hv off or reset command
+//            	if (data[4] && sdo_reset_cmd_active == 0)  PIN_HV_ON_SERIAL = OLL_SERIAL_ENABLE;
+//                else if (data[4] == 0)		  			   PIN_HV_ON_SERIAL = !OLL_SERIAL_ENABLE;;	 // either hv off or reset command
                 
+                if (data[4])  PIN_HV_ON_SERIAL = OLL_SERIAL_ENABLE;
+                else          PIN_HV_ON_SERIAL = !OLL_SERIAL_ENABLE;
+            
                 sdo_hv_enable = data[4];	 
           // }	 
         }
@@ -492,10 +497,11 @@ void CanProcessCommand(unsigned char length, unsigned char * data)
         	// check max, min range
             set_value  = (unsigned int)data[5] << 8;
             set_value += (unsigned int)data[4];
-            if (set_value <= MAX_PROGRAM_HTR_VOLTAGE)
-            {                        
-	        	global_data_A37474.heater_voltage_target = set_value;
-            }
+            global_data_A37474.ethernet_htr_ref = set_value;
+//            if (set_value <= MAX_PROGRAM_HTR_VOLTAGE)
+//            {                        
+//	        	global_data_A37474.heater_voltage_target = set_value;
+//            }
         }
     
      break;
@@ -509,10 +515,11 @@ void CanProcessCommand(unsigned char length, unsigned char * data)
         	// check max, min range
             set_value  = (unsigned int)data[5] << 8;
             set_value += (unsigned int)data[4];
-            if (set_value <= TOP_VOLTAGE_MAX_SET_POINT)  
-            {    
-            	ETMAnalogSetOutput(&global_data_A37474.analog_output_top_voltage, set_value);                    
- 			}
+            global_data_A37474.ethernet_top_ref = set_value;
+//            if (set_value <= TOP_VOLTAGE_MAX_SET_POINT)  
+//            {    
+//            	ETMAnalogSetOutput(&global_data_A37474.analog_output_top_voltage, set_value);                    
+// 			}
        }
         
      break;
@@ -526,10 +533,11 @@ void CanProcessCommand(unsigned char length, unsigned char * data)
         	// check max, min range
             set_value  = (unsigned int)data[5] << 8;
             set_value += (unsigned int)data[4];
-            if (set_value >= HIGH_VOLTAGE_MIN_SET_POINT && set_value <= HIGH_VOLTAGE_MAX_SET_POINT)  
-            {            
-            	ETMAnalogSetOutput(&global_data_A37474.analog_output_high_voltage, set_value);                    
-            }
+            global_data_A37474.ethernet_hv_ref = set_value;
+//            if (set_value >= HIGH_VOLTAGE_MIN_SET_POINT && set_value <= HIGH_VOLTAGE_MAX_SET_POINT)  
+//            {            
+//            	ETMAnalogSetOutput(&global_data_A37474.analog_output_high_voltage, set_value);                    
+//            }
         }
         
      break;
