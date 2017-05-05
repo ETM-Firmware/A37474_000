@@ -4,7 +4,7 @@
 
 #define FIRMWARE_AGILE_REV     0
 #define FIRMWARE_BRANCH        0
-#define FIRMWARE_MINOR_REV     13
+#define FIRMWARE_MINOR_REV     14
 
 
 #endif

@@ -217,7 +217,7 @@ void DoStateMachine(void) {
         global_data_A37474.control_state = STATE_HEATER_RAMP_UP;
       }
       if (CheckHeaterFault()) {
-        global_data_A37474.control_state = STATE_FAULT_WARMUP_HEATER_OFF;
+        global_data_A37474.control_state = STATE_FAULT_HEATER_OFF;
       }
     }    
     break;
@@ -446,6 +446,7 @@ void DoStateMachine(void) {
     DisableBeam();
     DisableHighVoltage();
     DisableHeater();
+    global_data_A37474.request_heater_enable = 0;
     global_data_A37474.current_state_msg = STATE_MESSAGE_FAULT_HEATER_OFF;
     ETMAnalogClearFaultCounters(&global_data_A37474.input_htr_v_mon);
     ETMAnalogClearFaultCounters(&global_data_A37474.input_htr_i_mon);
@@ -479,7 +480,7 @@ void DoStateMachine(void) {
         global_data_A37474.control_state = STATE_WAIT_FOR_CONFIG;
       }
       if (global_data_A37474.heater_start_up_attempts > MAX_HEATER_START_UP_ATTEMPTS) {
-        global_data_A37474.control_state = STATE_FAULT_HEATER_FAILURE;
+        global_data_A37474.control_state = STATE_FAULT_HEATER_OFF;
       }
     }
     break;
@@ -491,7 +492,7 @@ void DoStateMachine(void) {
     DisableHighVoltage();
     DisableHeater();
     global_data_A37474.current_state_msg = STATE_MESSAGE_FAULT_HEATER_OFF;
-    _FAULT_HEATER_STARTUP_FAILURE = 1;
+//    _FAULT_HEATER_STARTUP_FAILURE = 1;
     while (global_data_A37474.control_state == STATE_FAULT_HEATER_FAILURE) {
       // Can't leave this state without power cycle
       DoA37474();
@@ -500,7 +501,7 @@ void DoStateMachine(void) {
 
 
   default:
-    global_data_A37474.control_state = STATE_FAULT_HEATER_FAILURE;
+    global_data_A37474.control_state = STATE_FAULT_HEATER_OFF;
     break;
 
   }
@@ -576,7 +577,7 @@ void InitializeA37474(void) {
   
   if ((i2c_test & 0xFF00) == 0xFA00) {
     // There was a fault on the i2c bus, the MCP23017 did not initialize properly
-    _STATUS_MUX_CONFIG_FAILURE = 1;
+    _FAULT_MUX_CONFIG_FAILURE = 1;
   }
   
   PIN_ILOCK_ON_SERIAL = !OLL_SERIAL_ENABLE;  
@@ -1029,7 +1030,7 @@ unsigned int CheckHeaterFault(void) {
   fault |= _FAULT_ADC_DIGITAL_GRID;
 //  fault |= _FAULT_CONVERTER_LOGIC_ADC_READ_FAILURE;
   fault |= _FAULT_HEATER_RAMP_TIMEOUT;
-  fault |= _STATUS_MUX_CONFIG_FAILURE;
+  fault |= _FAULT_MUX_CONFIG_FAILURE;
   if (fault) {
     return 1;
   } else {
@@ -1048,6 +1049,8 @@ unsigned int CheckFault(void) {
   fault |= _FAULT_ADC_BIAS_V_MON_UNDER_ABSOLUTE;
   fault |= _FAULT_ADC_DIGITAL_ARC;
   fault |= _STATUS_INTERLOCK_INHIBITING_HV;
+  fault |= _FPGA_CURRENT_MONITOR_PULSE_WIDTH_FAULT;
+  fault |= _FPGA_PRF_FAULT;
   if (fault) {
     return 1;
   } else {
@@ -1061,6 +1064,8 @@ unsigned int CheckPreTopFault(void) {
   fault |= _FAULT_ADC_HV_V_MON_UNDER_RELATIVE;
   fault |= _FAULT_ADC_DIGITAL_ARC;
   fault |= _STATUS_INTERLOCK_INHIBITING_HV;
+  fault |= _FPGA_CURRENT_MONITOR_PULSE_WIDTH_FAULT;
+  fault |= _FPGA_PRF_FAULT;
   if (fault) {
     return 1;
   } else {
@@ -1075,6 +1080,8 @@ unsigned int CheckPreHVFault(void) {
   fault  = _FAULT_ADC_HV_V_MON_OVER_RELATIVE;
   fault |= _FAULT_ADC_DIGITAL_ARC;
   fault |= _STATUS_INTERLOCK_INHIBITING_HV;
+  fault |= _FPGA_CURRENT_MONITOR_PULSE_WIDTH_FAULT;
+  fault |= _FPGA_PRF_FAULT;
   if (fault) {
     return 1;
   } else {
@@ -1590,7 +1597,8 @@ void UpdateFaults(void) {
   }
   
   if (global_data_A37474.mux_fault > 5) {
-    _STATUS_MUX_CONFIG_FAILURE = 1;
+    global_data_A37474.mux_fault = 0;
+    _FAULT_MUX_CONFIG_FAILURE = 1;
   }
   
    
@@ -2315,28 +2323,28 @@ void FPGAReadData(void) {
     }
     
     // Check Pulse Width Limiting (NOT LATCHED)
-//    ETMDigitalUpdateInput(&global_data_A37474.fpga_pulse_width_limiting_active, fpga_bits.pulse_width_limiting_active);
-//    if (global_data_A37474.fpga_pulse_width_limiting_active.filtered_reading) {
-//      _FPGA_PULSE_WIDTH_LIMITING = 1;
-//    } else {
-//      _FPGA_PULSE_WIDTH_LIMITING = 0;
-//    }
+    ETMDigitalUpdateInput(&global_data_A37474.fpga_pulse_width_limiting_active, fpga_bits.pulse_width_limiting_active);
+    if (global_data_A37474.fpga_pulse_width_limiting_active.filtered_reading) {
+      _FPGA_PULSE_WIDTH_LIMITING = 1;
+    } else {
+      _FPGA_PULSE_WIDTH_LIMITING = 0;
+    }
     
-    // Check prf fault (NOT LATCHED)
-//    ETMDigitalUpdateInput(&global_data_A37474.fpga_prf_fault, fpga_bits.prf_fault);
-//    if (global_data_A37474.fpga_prf_fault.filtered_reading) {
-//      _FPGA_PRF_FAULT = 1;
-//    } else {
-//      _FPGA_PRF_FAULT = 0;
-//    }
+    // Check prf fault (LATCHED)
+    ETMDigitalUpdateInput(&global_data_A37474.fpga_prf_fault, fpga_bits.prf_fault);
+    if (global_data_A37474.fpga_prf_fault.filtered_reading) {
+      _FPGA_PRF_FAULT = 1;
+    } else if (global_data_A37474.reset_active) {
+      _FPGA_PRF_FAULT = 0;
+    }
 
-    // Check Current Monitor Pulse Width Fault (NOT LATCHED)
-//    ETMDigitalUpdateInput(&global_data_A37474.fpga_current_monitor_pulse_width_fault, fpga_bits.current_monitor_pulse_width_fault);
-//    if (global_data_A37474.fpga_current_monitor_pulse_width_fault.filtered_reading) {
-//      _FPGA_CURRENT_MONITOR_PULSE_WIDTH_FAULT = 1;
-//    } else {
-//      _FPGA_CURRENT_MONITOR_PULSE_WIDTH_FAULT = 0;
-//    }
+    // Check Current Monitor Pulse Width Fault (LATCHED)
+    ETMDigitalUpdateInput(&global_data_A37474.fpga_current_monitor_pulse_width_fault, fpga_bits.current_monitor_pulse_width_fault);
+    if (global_data_A37474.fpga_current_monitor_pulse_width_fault.filtered_reading) {
+      _FPGA_CURRENT_MONITOR_PULSE_WIDTH_FAULT = 1;
+    } else if (global_data_A37474.reset_active) {
+      _FPGA_CURRENT_MONITOR_PULSE_WIDTH_FAULT = 0;
+    }
 
     // Check grid module hardware fault (NOT LATCHED)
     ETMDigitalUpdateInput(&global_data_A37474.fpga_grid_module_hardware_fault, fpga_bits.grid_module_hardware_fault);

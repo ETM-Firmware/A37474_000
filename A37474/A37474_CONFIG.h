@@ -3,266 +3,61 @@
 
 //-----------------------Specific board selections---------------------
 
-//#define __A36772_000
-//#define __A36772_600
-//#define __A36772_700
-//#define __A36772_100
-//#define __A36772_200
 
-
-#define __A37474_000
+#define __A37474_000_TEST_GUN
+//#define __A37474_000
 
 
 
 // Make sure that at least one board is selected
-#ifndef __A36772_000
-#ifndef __A36772_600
-#ifndef __A36772_700
-#ifndef __A36772_100
-#ifndef __A36772_200
+#ifndef __A37474_000_TEST_GUN
 #ifndef __A37474_000
 #error "No Specific Board Selected"
 #endif
 #endif
-#endif
-#endif
-#endif
-#endif
 
-#ifdef __A36772_000                                          // Now called A36772-400Z in hardware
-#define __MODE_MODBUS_INTERFACE
-#define __OPTION_ENABLE_CAN
-#define OLL_PIN_CPU_HV_ENABLE_HV_ENABLED        1
-#define REF_VTOP_SCALE_SELECTED                 .62500       // 1V = 50V Eg
-#define REF_VTOP_OFFSET_SELECTED                0
-#define REF_EK_SCALE_SELECTED                   .33784       // 0.37V = -1kV Ek
-#define DAC_MON_HTR_CURRENT_SCALE_SELECTED      10.6667      // 1V = 500mA If
-#define DAC_MON_EK_VOLTAGE_SCALE_SELECTED       1.9733       // 0.37V = -1kV Ek
-#define DAC_MON_TOP_VOLTAGE_SCALE_SELECTED      1.0667       // 1V = 50V Eg
-#define DAC_MON_TOP_VOLTAGE_OFFSET_SELECTED     0
-#define HEATER_RAMP_TIME                        30000
-#define MAX_PROGRAM_HTR_VOLTAGE                 7000         // 7.0 V
-#define MAX_RAMP_HTR_I                          1650         // 1.600 Amps
-#define HTR_OC_ABS                              1750         // 1.750 Amps
-#define HV_MAX_SET_BOARD_SPEC                   20000        // -20KV
-#define HV_MIN_SET_BOARD_SPEC                   5000         // -5KV
-#define TOP_MAX_SET_BOARD_SPEC                  40000        // 320V
-#define TOP_MIN_SET_BOARD_SPEC                  4000         // -40V
-#define BIAS_OVER_VOLTAGE                       18000        // -180V
-#define BIAS_UNDER_VOLTAGE                      14000        // -140V
-#define BOARD_DASH_NUMBER                       000
-#ifdef  __A36772_600
-#error "Multiple boards selected"
-#endif
-#ifdef  __A36772_100
-#error "Multiple boards selected"
-#endif
-#ifdef  __A36772_200
-#error "Multiple boards selected"
-#endif
-#ifdef  __A37474_000
-#error "Multiple boards selected"
-#endif
-#ifdef  __A36772_700
-#error "Multiple boards selected"
-#endif
-#endif
-
-#ifdef __A36772_600
-#define __MODE_MODBUS_INTERFACE
-#define __OPTION_ENABLE_CAN
-#define OLL_PIN_CPU_HV_ENABLE_HV_ENABLED        1
-#define REF_VTOP_SCALE_SELECTED                 .62500       // 1V = 40V above -100V Eg
-#define REF_VTOP_OFFSET_SELECTED                -3200
-#define REF_EK_SCALE_SELECTED                   .31250       // 1V = 2kV Ek 
-#define DAC_MON_HTR_CURRENT_SCALE_SELECTED      10.6667      // 1V = 500mA If
-#define DAC_MON_EK_VOLTAGE_SCALE_SELECTED       2.6667       // 1V = 2kV Ek
-#define DAC_MON_TOP_VOLTAGE_SCALE_SELECTED      1.3333       // 1V = 40V above -100V Eg
-#define DAC_MON_TOP_VOLTAGE_OFFSET_SELECTED     2000         //  ?
-#define HEATER_RAMP_TIME                        30000
-#define MAX_PROGRAM_HTR_VOLTAGE                 7000         // 7.0 V
-#define MAX_RAMP_HTR_I                          1600         // 1.600 Amps
-#define HTR_OC_ABS                              1750         // 1.750 Amps
-#define HV_MAX_SET_BOARD_SPEC                   20000        // -20KV
-#define HV_MIN_SET_BOARD_SPEC                   5000         // -5KV
-#define TOP_MAX_SET_BOARD_SPEC                  38000        // 300V
-#define TOP_MIN_SET_BOARD_SPEC                  0            // -80V
-#define BIAS_OVER_VOLTAGE                       18000        // -180V
-#define BIAS_UNDER_VOLTAGE                      14000        // -140V
-#define BOARD_DASH_NUMBER                       600
-#ifdef  __A36772_100
-#error "Multiple boards selected"
-#endif
-#ifdef  __A36772_200
-#error "Multiple boards selected"
-#endif
-#ifdef  __A37474_000
-#error "Multiple boards selected"
-#endif
-#ifdef  __A36772_700
-#error "Multiple boards selected"
-#endif
-#endif
-
-#ifdef __A36772_100
-#define __MODE_MODBUS_INTERFACE
-#define __OPTION_ENABLE_CAN
-#define OLL_PIN_CPU_HV_ENABLE_HV_ENABLED        0
-#define REF_VTOP_SCALE_SELECTED                 .62500       // 1V = 40V above -100V Eg
-#define REF_VTOP_OFFSET_SELECTED                -3200
-#define REF_EK_SCALE_SELECTED                   .31250       // 1V = 2kV Ek
-#define DAC_MON_HTR_CURRENT_SCALE_SELECTED      5.3333      // 1V = 1A If
-#define DAC_MON_EK_VOLTAGE_SCALE_SELECTED       2.6667       // 1V = 2kV Ek
-#define DAC_MON_TOP_VOLTAGE_SCALE_SELECTED      1.0667       // 1V = 50V above -100V Eg
-#define DAC_MON_TOP_VOLTAGE_OFFSET_SELECTED     2000         //  ?
-#define HEATER_RAMP_TIME                        60000        // 10min    
-#define MAX_PROGRAM_HTR_VOLTAGE                 8000         // 8.000 V
-#define MAX_RAMP_HTR_I                          5200         // 5.200 Amps  
-#define HTR_OC_ABS                              5500         // 5.500 Amps 
-#define HV_MAX_SET_BOARD_SPEC                   20000        // -20KV
-#define HV_MIN_SET_BOARD_SPEC                   0            // 0V
-#define TOP_MAX_SET_BOARD_SPEC                  40000        // 320V
-#define TOP_MIN_SET_BOARD_SPEC                  0            // -80V
-#define BOARD_DASH_NUMBER                       100
-#define BIAS_OVER_VOLTAGE                       23000        // -230V
-#define BIAS_UNDER_VOLTAGE                      17000        // -170V
-#ifdef  __A36772_200
-#error "Multiple boards selected"
-#endif
-#ifdef  __A37474_000
-#error "Multiple boards selected"
-#endif
-#ifdef  __A36772_700
-#error "Multiple boards selected"
-#endif
-#endif
-
-#ifdef __A36772_200
-#define __MODE_MODBUS_INTERFACE
-#define __OPTION_ENABLE_CAN
-#define OLL_PIN_CPU_HV_ENABLE_HV_ENABLED        1
-#define REF_VTOP_SCALE_SELECTED                 .62500       // 1V = 50V Eg
-#define REF_VTOP_OFFSET_SELECTED                0
-#define REF_EK_SCALE_SELECTED                   .33784       // 0.37V = -1kV Ek
-#define DAC_MON_HTR_CURRENT_SCALE_SELECTED      10.6667      // 1V = 500mA If
-#define DAC_MON_EK_VOLTAGE_SCALE_SELECTED       1.9733       // 0.37V = -1kV Ek
-#define DAC_MON_TOP_VOLTAGE_SCALE_SELECTED      1.0667       // 1V = 50V Eg
-#define DAC_MON_TOP_VOLTAGE_OFFSET_SELECTED     0
-#define HEATER_RAMP_TIME                        30000
-#define MAX_PROGRAM_HTR_VOLTAGE                 7000         // 7.0 V
-#define MAX_RAMP_HTR_I                          1600         // 1.600 Amps
-#define HTR_OC_ABS                              1750         // 1.750 Amps
-#define HV_MAX_SET_BOARD_SPEC                   20000        // -20KV
-#define HV_MIN_SET_BOARD_SPEC                   5000         // -5KV
-#define TOP_MAX_SET_BOARD_SPEC                  38000        // 300V
-#define TOP_MIN_SET_BOARD_SPEC                  0            // -80V
-#define BIAS_OVER_VOLTAGE                       18000        // -180V
-#define BIAS_UNDER_VOLTAGE                      14000        // -140V
-#define BOARD_DASH_NUMBER                       200
-#ifdef  __A37474_000
-#error "Multiple boards selected"
-#endif
-#ifdef  __A36772_700
-#error "Multiple boards selected"
-#endif
-#endif
 
 #ifdef __A37474_000
 #define __MODE_ETHERNET_INTERFACE
 #define __MODE_MODBUS_MONITOR
 #define __OPTION_ENABLE_CAN
 #define OLL_PIN_CPU_HV_ENABLE_HV_ENABLED        1
-#define HEATER_RAMP_TIME                        30000
+#define HEATER_RAMP_TIME                        21000        // 3.5min
+#define RAMP_TIME_INTERVAL                      30           // 300ms
+#define MAX_PROGRAM_HTR_VOLTAGE                 8000         // 8.0 V
+#define MAX_RAMP_HTR_I                          4200         // 4.200 Amps
+#define HTR_OC_ABS                              4400         // 4.400 Amps
+#define HV_MAX_SET_BOARD_SPEC                   20000        // -20KV
+#define HV_MIN_SET_BOARD_SPEC                   0            // 0KV
+#define TOP_MAX_SET_BOARD_SPEC                  22000        // 140V
+#define TOP_MIN_SET_BOARD_SPEC                  0            // -80V
+#define BIAS_OVER_VOLTAGE                       18000        // -180V
+#define BIAS_UNDER_VOLTAGE                      14000        // -140V
+#define BOARD_DASH_NUMBER                       000
+#ifdef  __A37474_000_TEST_GUN
+#error "Multiple boards selected"
+#endif
+#endif
+
+#ifdef __A37474_000_TEST_GUN
+#define __MODE_ETHERNET_INTERFACE
+#define __MODE_MODBUS_MONITOR
+#define __OPTION_ENABLE_CAN
+#define OLL_PIN_CPU_HV_ENABLE_HV_ENABLED        1
+#define HEATER_RAMP_TIME                        42000        // 7min
+#define RAMP_TIME_INTERVAL                      60           // 600ms
 #define MAX_PROGRAM_HTR_VOLTAGE                 8000         // 8.0 V
 #define MAX_RAMP_HTR_I                          1650         // 1.650 Amps
 #define HTR_OC_ABS                              1750         // 1.750 Amps
 #define HV_MAX_SET_BOARD_SPEC                   20000        // -20KV
-#define HV_MIN_SET_BOARD_SPEC                   5000         // -5KV
+#define HV_MIN_SET_BOARD_SPEC                   0            // 0KV
 #define TOP_MAX_SET_BOARD_SPEC                  40000        // 320V
 #define TOP_MIN_SET_BOARD_SPEC                  0            // -80V
 #define BIAS_OVER_VOLTAGE                       18000        // -180V
 #define BIAS_UNDER_VOLTAGE                      14000        // -140V
 #define BOARD_DASH_NUMBER                       000
-#ifdef  __A36772_700
-#error "Multiple boards selected"
-#endif
 #endif
 
-#ifdef __A36772_700
-#define __MODE_DISCRETE_INTERFACE
-#define __OPTION_ENABLE_CAN
-#define OLL_PIN_CPU_HV_ENABLE_HV_ENABLED        1
-#define REF_VTOP_SCALE_SELECTED                 .31250       // 1V = 20V above -100V Eg
-#define REF_VTOP_OFFSET_SELECTED                -6400
-#define REF_EK_SCALE_SELECTED                   .31250       // 1V = -2kV Ek
-#define DAC_MON_HTR_CURRENT_SCALE_SELECTED      10.6667      // 1V = 500mA If
-#define DAC_MON_EK_VOLTAGE_SCALE_SELECTED       2.6667       // 1V = -2kV Ek
-#define DAC_MON_TOP_VOLTAGE_SCALE_SELECTED      2.6667       // 1V = 20V above -100V Eg
-#define DAC_MON_TOP_VOLTAGE_OFFSET_SELECTED     2000
-#define HEATER_RAMP_TIME                        30000
-#define MAX_PROGRAM_HTR_VOLTAGE                 7000         // 7.0 V
-#define MAX_RAMP_HTR_I                          1650         // 1.650 Amps
-#define HTR_OC_ABS                              1750         // 1.750 Amps
-#define HV_MAX_SET_BOARD_SPEC                   20000        // -20KV
-#define HV_MIN_SET_BOARD_SPEC                   5000         // -5KV
-#define TOP_MAX_SET_BOARD_SPEC                  26000        // 180V
-#define TOP_MIN_SET_BOARD_SPEC                  0            // -80V
-#define BIAS_OVER_VOLTAGE                       18000        // -180V
-#define BIAS_UNDER_VOLTAGE                      14000        // -140V
-#define BOARD_DASH_NUMBER                       700
-#endif
-
-
-
-// // ----------- Gun Driver Load Specific Parameters ----------------------
-
-// //#define __LOAD_LINAC_GUN
-// #define __LOAD_TWT
-// //#define __LOAD_TEST_GUN
-
-
-// #ifndef __LOAD_LINAC_GUN
-// #ifndef __LOAD_TWT
-// #ifndef __LOAD_TEST_GUN
-// #error "No Load Selected"
-// #endif
-// #endif
-// #endif
-
-// #ifdef __LOAD_LINAC_GUN
-// #ifdef  __LOAD_TWT
-// #error "Multiple Loads Selected"
-// #endif
-// #ifdef  __LOAD_TEST_GUN
-// #error "Multiple Loads Selected"
-// #endif
-// #define HEATER_RAMP_TIME                 30000
-// #define MAX_PROGRAM_HTR_VOLTAGE          5800           // 5.8 V
-// #define MAX_RAMP_HTR_I                   1650           // 1.650 Amps
-// #define HTR_OC_ABS                       1750           // 1.750 Amps
-// #define GUN_DRIVER_LOAD_TYPE             0
-// #endif
-
-// #ifdef __LOAD_TWT
-// #ifdef  __LOAD_TEST_GUN
-// #error "Multiple Loads Selected"
-// #endif
-// #define HEATER_RAMP_TIME                 30000
-// #define MAX_PROGRAM_HTR_VOLTAGE          7000           // 7.0 V
-// #define MAX_RAMP_HTR_I                   1600           // 1.600 Amps
-// #define HTR_OC_ABS                       1750           // 1.750 Amps
-// //#define HTR_OV_ABS                       7000           // 7 V
-// #define GUN_DRIVER_LOAD_TYPE             1
-// #endif
-
-// #ifdef __LOAD_TEST_GUN
-// #define HEATER_RAMP_TIME                 60000
-// #define MAX_PROGRAM_HTR_VOLTAGE          6100           // 6.100 V
-// #define MAX_RAMP_HTR_I                   3000           // 3.000 Amps
-// #define HTR_OC_ABS                       3200           // 3.200 Amps
-// //#define HTR_OV_ABS                       6250           // 6.25V
-// #define GUN_DRIVER_LOAD_TYPE             2
-// #endif
 
 /*----------------------------------------------------------------------*/
 /*
@@ -270,12 +65,22 @@
   __MODE_CAN_INTERFACE        
     In this mode, the gun driver is controlled over the CAN interface.
     The descrete digital/analog is not used.
-    R126 and R127 should be installed
+
 
   __MODE_DISCRETE_INTERFACE
     In this mode, the gun driver is controlled by discrete fiber or signal lines.
     The pulse top, high voltage, and heater references are generated from the external interface
-    R126 and R127 should not be installed 
+  
+  
+  __MODE_MODBUS_INTERFACE
+    In this mode, the gun driver is controlled by discrete fiber or signal lines.
+    The pulse top, high voltage, and heater references are generated from the external interface
+  
+ 
+  __MODE_ETHERNET_INTERFACE
+    In this mode, the gun driver is controlled by discrete fiber or signal lines.
+    The pulse top, high voltage, and heater references are generated from the external interface
+ 
 
   __OPTION_ENABLE_CAN
     This is only valid for __MODE_DISCRETE_INTERFACE
@@ -333,8 +138,6 @@
 #define __CAN_ENABLED
 #endif
 
-//the new gun drivers (-100 and -200) will have specified load conditions for the heater
-
 
 
 // -------------- Interface board Configuration ---------------------
@@ -374,9 +177,9 @@
 
 // ----------- Timers configurations - ALL Times are in 10ms Units --------------------
 #define LED_STARTUP_FLASH_TIME                500      // Time LEDs will flash at startup
-#define MAX_HEATER_RAMP_UP_TIME               42000//21000    // (3.5min) If the heater does not reach it's programed voltage in this time a fault will be generated
+#define MAX_HEATER_RAMP_UP_TIME               HEATER_RAMP_TIME    // (3.5min) If the heater does not reach it's programed voltage in this time a fault will be generated
 #define HEATER_AUTO_RESTART_TIME              500      // Time delay between a heater fault and when the heater gets restarted
-#define HEATER_RAMP_UP_TIME_PERIOD            60//30       // (300ms) During heater ramp up, the heater voltage will be increased every N 10ms (see HEATER_RAMP_UP_INCREMENT)
+#define HEATER_RAMP_UP_TIME_PERIOD            RAMP_TIME_INTERVAL  // (300ms) During heater ramp up, the heater voltage will be increased every N 10ms (see HEATER_RAMP_UP_INCREMENT)
 #define GUN_DRIVER_POWER_SUPPLY_STARTUP_TIME  100      // Wait this long between enabling High Voltage / Pulse Top / Bias and cheching that they are at correct values
 
 #define HEATER_REGULATION_TIME_PERIOD         5        // (50ms) This is the period that the regulation of the heater voltage takes between increments
@@ -392,7 +195,7 @@
 
 
 
-#define HEATER_VOLTAGE_CURRENT_LIMITED_FAULT_TIME (500 / HEATER_RAMP_UP_TIME_PERIOD)  // 5 Seconds
+#define HEATER_VOLTAGE_CURRENT_LIMITED_FAULT_TIME   500 // 5 Seconds
 
 #define CURRENT_LIMITED_FAULT_HOLDOFF_TIME    10      // 10 seconds at the start of heater warmup before current limit fault is timed
 #define FAULT_HOLDOFF_STATE                   22
