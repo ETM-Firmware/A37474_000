@@ -4,8 +4,8 @@
 //-----------------------Specific board selections---------------------
 
 
-#define __A37474_000_TEST_GUN
-//#define __A37474_000
+//#define __A37474_000_TEST_GUN
+#define __A37474_000
 
 
 
