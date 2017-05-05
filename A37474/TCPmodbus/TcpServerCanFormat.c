@@ -607,18 +607,18 @@ void CanProcessCommand(unsigned char length, unsigned char * data)
 
     case SDO_IDX_GD_STATE:
     	if (is_upload) {        
-        	txData[4] = global_data_A37474.current_state_msg & 0x00ff;
-            txData[5] = (global_data_A37474.current_state_msg >> 8) & 0x00ff;
+        	txData[4] = global_data_A37474.state_message & 0x00ff;
+            txData[5] = (global_data_A37474.state_message >> 8) & 0x00ff;
             
-        	if (sdo_htr_enable)      	txData[6] |= 0x0001;
-            if (sdo_hv_enable)  	 	txData[6] |= 0x0008;
-            if (sdo_pulsetop_enable) 	txData[6] |= 0x0004;
-            if (sdo_trig_enable)     	txData[6] |= 0x0010;
-            if (sdo_reset_cmd_active)	txData[6] |= 0x0020;
-            if (sdo_hv_bypass)			txData[6] |= 0x0040;
-            
-            if (PIN_CUSTOMER_HV_ON == ILL_PIN_CUSTOMER_HV_ON_ENABLE_HV)  	 			txData[7] |= 0x0008;
-            if (PIN_CUSTOMER_BEAM_ENABLE == ILL_PIN_CUSTOMER_BEAM_ENABLE_BEAM_ENABLED)  txData[7] |= 0x0010;
+//        	if (sdo_htr_enable)      	txData[6] |= 0x0001;
+//            if (sdo_hv_enable)  	 	txData[6] |= 0x0008;
+//            if (sdo_pulsetop_enable) 	txData[6] |= 0x0004;
+//            if (sdo_trig_enable)     	txData[6] |= 0x0010;
+//            if (sdo_reset_cmd_active)	txData[6] |= 0x0020;
+//            if (sdo_hv_bypass)			txData[6] |= 0x0040;
+//            
+//            if (PIN_CUSTOMER_HV_ON == ILL_PIN_CUSTOMER_HV_ON_ENABLE_HV)  	 			txData[7] |= 0x0008;
+//            if (PIN_CUSTOMER_BEAM_ENABLE == ILL_PIN_CUSTOMER_BEAM_ENABLE_BEAM_ENABLED)  txData[7] |= 0x0010;
  
      	}    
     
