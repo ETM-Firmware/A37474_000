@@ -1031,6 +1031,7 @@ unsigned int CheckHeaterFault(void) {
 //  fault |= _FAULT_CONVERTER_LOGIC_ADC_READ_FAILURE;
   fault |= _FAULT_HEATER_RAMP_TIMEOUT;
   fault |= _FAULT_MUX_CONFIG_FAILURE;
+  fault |= _FAULT_SPI_COMMUNICATION;
   if (fault) {
     return 1;
   } else {
@@ -2389,7 +2390,7 @@ void FPGAReadData(void) {
     
     // FPGA DIPSWITCH 1 ON (NOT LATCHED)
     ETMDigitalUpdateInput(&global_data_A37474.fpga_dipswitch_1_on, fpga_bits.dipswitch_1_on);
-    if (&global_data_A37474.fpga_dipswitch_1_on.filtered_reading) {
+    if (global_data_A37474.fpga_dipswitch_1_on.filtered_reading) {
       _FPGA_DIPSWITCH_1_ON = 1;
     } else {
       _FPGA_DIPSWITCH_1_ON = 0;
@@ -2397,7 +2398,7 @@ void FPGAReadData(void) {
 
     // Check test mode toggle switch (NOT LATCHED)
     ETMDigitalUpdateInput(&global_data_A37474.fpga_test_mode_toggle_switch_set_to_test, fpga_bits.test_mode_toggle_switch_set_to_test);
-    if (&global_data_A37474.fpga_test_mode_toggle_switch_set_to_test.filtered_reading) {
+    if (global_data_A37474.fpga_test_mode_toggle_switch_set_to_test.filtered_reading) {
       _FPGA_TEST_MODE_TOGGLE_SWITCH_TEST_MODE = 1;
     } else {
       _FPGA_TEST_MODE_TOGGLE_SWITCH_TEST_MODE = 0;

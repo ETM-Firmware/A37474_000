@@ -563,8 +563,9 @@ void CanProcessCommand(unsigned char length, unsigned char * data)
      
     case SDO_IDX_EC_READ:
      	if (is_upload) {
-        	txData[4] = global_data_A37474.input_bias_v_mon.reading_scaled_and_calibrated & 0x00ff;
-        	txData[5] = (global_data_A37474.input_bias_v_mon.reading_scaled_and_calibrated >> 8) & 0x00ff;        
+            set value = global_data_A37474.input_bias_v_mon.reading_scaled_and_calibrated / 10;
+        	txData[4] = set value & 0x00ff;
+        	txData[5] = (set value >> 8) & 0x00ff;        
     	}
      break;
 		 
@@ -585,8 +586,9 @@ void CanProcessCommand(unsigned char length, unsigned char * data)
 
     case SDO_IDX_IKP_READ:
     	if (is_upload) {
-        	txData[4] = global_data_A37474.input_gun_i_peak.reading_scaled_and_calibrated & 0x00ff;
-        	txData[5] = (global_data_A37474.input_gun_i_peak.reading_scaled_and_calibrated >> 8) & 0x00ff;        
+            set value = global_data_A37474.input_gun_i_peak.reading_scaled_and_calibrated /10;
+        	txData[4] = set value & 0x00ff;
+        	txData[5] = (set value >> 8) & 0x00ff;        
     	}
      break;
 		
