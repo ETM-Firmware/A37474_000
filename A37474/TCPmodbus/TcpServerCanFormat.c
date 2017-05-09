@@ -333,7 +333,7 @@ void CanProcessCommand(unsigned char length, unsigned char * data)
 	        txData[6] = ' ';
 	        txData[7] = ' ';
             #else
-	    	txData[4] = TARGET_CUSTOMER_HARDWARE_REV & 0xff;
+	    	txData[4] = INTERFACE_HARDWARE_REV;   //TARGET_CUSTOMER_HARDWARE_REV & 0xff;
 	        txData[5] = 0;
 	        txData[6] = 0;
 	        txData[7] = 0;
@@ -563,9 +563,9 @@ void CanProcessCommand(unsigned char length, unsigned char * data)
      
     case SDO_IDX_EC_READ:
      	if (is_upload) {
-            set value = global_data_A37474.input_bias_v_mon.reading_scaled_and_calibrated / 10;
-        	txData[4] = set value & 0x00ff;
-        	txData[5] = (set value >> 8) & 0x00ff;        
+            set_value = global_data_A37474.input_bias_v_mon.reading_scaled_and_calibrated / 10;
+        	txData[4] = set_value & 0x00ff;
+        	txData[5] = (set_value >> 8) & 0x00ff;        
     	}
      break;
 		 
@@ -586,9 +586,9 @@ void CanProcessCommand(unsigned char length, unsigned char * data)
 
     case SDO_IDX_IKP_READ:
     	if (is_upload) {
-            set value = global_data_A37474.input_gun_i_peak.reading_scaled_and_calibrated /10;
-        	txData[4] = set value & 0x00ff;
-        	txData[5] = (set value >> 8) & 0x00ff;        
+            set_value = global_data_A37474.input_gun_i_peak.reading_scaled_and_calibrated /10;
+        	txData[4] = set_value & 0x00ff;
+        	txData[5] = (set_value >> 8) & 0x00ff;        
     	}
      break;
 		

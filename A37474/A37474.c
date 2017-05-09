@@ -962,7 +962,7 @@ void ResetAllFaultInfo(void) {
   // Initialize Digital Input Filters for FPGA Status
   ETMDigitalInitializeInput(&global_data_A37474.fpga_coverter_logic_pcb_rev_mismatch       , 0, 30);   
   ETMDigitalInitializeInput(&global_data_A37474.fpga_firmware_major_rev_mismatch           , 0, 30);   
-  ETMDigitalInitializeInput(&global_data_A37474.fpga_firmware_minor_rev_mismatch           , 0, 30);   
+//  ETMDigitalInitializeInput(&global_data_A37474.fpga_firmware_minor_rev_mismatch           , 0, 30);   
   ETMDigitalInitializeInput(&global_data_A37474.fpga_arc                                   , 0, 5);
   ETMDigitalInitializeInput(&global_data_A37474.fpga_arc_high_voltage_inihibit_active      , 0, 0);
   ETMDigitalInitializeInput(&global_data_A37474.fpga_heater_voltage_less_than_4_5_volts    , 0, 30);
@@ -1031,6 +1031,7 @@ unsigned int CheckHeaterFault(void) {
 //  fault |= _FAULT_CONVERTER_LOGIC_ADC_READ_FAILURE;
   fault |= _FAULT_HEATER_RAMP_TIMEOUT;
   fault |= _FAULT_MUX_CONFIG_FAILURE;
+  fault |= _FAULT_CONVERTER_LOGIC_ADC_READ_FAILURE;
   fault |= _FAULT_SPI_COMMUNICATION;
   if (fault) {
     return 1;
@@ -1750,12 +1751,12 @@ void UpdateFaults(void) {
     }  
   } 
 
-//  if (global_data_A37474.adc_read_error_test > MAX_CONVERTER_LOGIC_ADC_READ_ERRORS) {
-//    global_data_A37474.adc_read_error_test = MAX_CONVERTER_LOGIC_ADC_READ_ERRORS;
-//    _FAULT_CONVERTER_LOGIC_ADC_READ_FAILURE = 1; 
-//  } else if (global_data_A37474.reset_active) {
-//    _FAULT_CONVERTER_LOGIC_ADC_READ_FAILURE = 0;
-//  }
+  if (global_data_A37474.adc_read_error_test > MAX_CONVERTER_LOGIC_ADC_READ_ERRORS) {
+    global_data_A37474.adc_read_error_test = MAX_CONVERTER_LOGIC_ADC_READ_ERRORS;
+    _FAULT_CONVERTER_LOGIC_ADC_READ_FAILURE = 1; 
+  } else if (global_data_A37474.reset_active) {
+    _FAULT_CONVERTER_LOGIC_ADC_READ_FAILURE = 0;
+  }
   
   if ((global_data_A37474.heater_ramp_up_time == 0) && (global_data_A37474.control_state == STATE_HEATER_RAMP_UP)) {
     _FAULT_HEATER_RAMP_TIMEOUT = 1;
@@ -2198,8 +2199,8 @@ void DACWriteChannel(unsigned int command_word, unsigned int data_word) {
 
 
 typedef struct {
-  unsigned fpga_firmware_minor_rev:6;
-  unsigned fpga_firmware_major_rev:4;
+  unsigned fpga_firmware_rev:8;
+  unsigned unused_bits:2;
   unsigned customer_hardware_rev:6;
   unsigned arc:1;
   unsigned arc_high_voltage_inihibit_active:1;
@@ -2222,7 +2223,6 @@ typedef struct {
 
 void FPGAReadData(void) {
   unsigned long bits;
-  unsigned int test;
   TYPE_FPGA_DATA fpga_bits;
   /*
     Reads 32 bits from the FPGA
@@ -2249,40 +2249,39 @@ void FPGAReadData(void) {
   fpga_bits = *(TYPE_FPGA_DATA*)&bits;
   
   // Check the firmware major rev (LATCHED)    
-  if (fpga_bits.fpga_firmware_major_rev != TARGET_FPGA_FIRMWARE_MAJOR_REV) {
+  if (fpga_bits.fpga_firmware_rev != TARGET_FPGA_FIRMWARE_REV) {
     ETMDigitalUpdateInput(&global_data_A37474.fpga_firmware_major_rev_mismatch, 1);   
   } else { 
     ETMDigitalUpdateInput(&global_data_A37474.fpga_firmware_major_rev_mismatch, 0);
   }
   
   // Only check the rest of the data bits if the Major Rev Matches
-  if (fpga_bits.fpga_firmware_major_rev == TARGET_FPGA_FIRMWARE_MAJOR_REV) {
+  if (fpga_bits.fpga_firmware_rev == TARGET_FPGA_FIRMWARE_REV) {
 
     // Check the logic board pcb rev (NOT LATCHED)
-    if (fpga_bits.customer_hardware_rev != TARGET_CUSTOMER_HARDWARE_REV) {
-      ETMDigitalUpdateInput(&global_data_A37474.fpga_coverter_logic_pcb_rev_mismatch, 1);   
-    } else {
-      ETMDigitalUpdateInput(&global_data_A37474.fpga_coverter_logic_pcb_rev_mismatch, 0);
-    }
+//    if (fpga_bits.customer_hardware_rev != TARGET_CUSTOMER_HARDWARE_REV) {
+//      ETMDigitalUpdateInput(&global_data_A37474.fpga_coverter_logic_pcb_rev_mismatch, 1);   
+//    } else {
+//      ETMDigitalUpdateInput(&global_data_A37474.fpga_coverter_logic_pcb_rev_mismatch, 0);
+//    }
 //    if (global_data_A37474.fpga_coverter_logic_pcb_rev_mismatch.filtered_reading) {
 //      _FPGA_CUSTOMER_HARDWARE_REV_MISMATCH = 1;
 //    } else {
 //      _FPGA_CUSTOMER_HARDWARE_REV_MISMATCH = 0;
 //    }
-    test = fpga_bits.fpga_firmware_minor_rev & 0x003F;
 
     // Check the firmware minor rev (NOT LATCHED)
-    if (fpga_bits.fpga_firmware_minor_rev != TARGET_FPGA_FIRMWARE_MINOR_REV) {
-      ETMDigitalUpdateInput(&global_data_A37474.fpga_firmware_minor_rev_mismatch, 1);   
-    } else {
-      ETMDigitalUpdateInput(&global_data_A37474.fpga_firmware_minor_rev_mismatch, 0);
-    }
-    if (global_data_A37474.fpga_firmware_minor_rev_mismatch.filtered_reading) {
-      _FPGA_FIRMWARE_MINOR_REV_MISMATCH = 1;
-    } else {
-      _FPGA_FIRMWARE_MINOR_REV_MISMATCH = 0;
-    }
-    
+//////    if (fpga_bits.fpga_firmware_minor_rev != TARGET_FPGA_FIRMWARE_MINOR_REV) {
+//////      ETMDigitalUpdateInput(&global_data_A37474.fpga_firmware_minor_rev_mismatch, 1);   
+//////    } else {
+//////      ETMDigitalUpdateInput(&global_data_A37474.fpga_firmware_minor_rev_mismatch, 0);
+//////    }
+//////    if (global_data_A37474.fpga_firmware_minor_rev_mismatch.filtered_reading) {
+//////      _FPGA_FIRMWARE_MINOR_REV_MISMATCH = 1;
+//////    } else {
+//////      _FPGA_FIRMWARE_MINOR_REV_MISMATCH = 0;
+//////    }
+//////    
     // Check the Arc Count (NOT LATCHED)
     ETMDigitalUpdateInput(&global_data_A37474.fpga_arc, fpga_bits.arc); 
     if (global_data_A37474.fpga_arc.filtered_reading) {

@@ -288,6 +288,9 @@ F  1 1 0 0 0 0 0 1 1 1 0 0 1 1 1 1
 #define TARGET_CUSTOMER_HARDWARE_REV                 0b000100
 #define TARGET_FPGA_FIRMWARE_MAJOR_REV               0b0001
 #define TARGET_FPGA_FIRMWARE_MINOR_REV               0b000010
+
+#define TARGET_FPGA_FIRMWARE_REV                     0b01000010    // 0x42 'B'
+#define INTERFACE_HARDWARE_REV                       0b01000001    // 0x41 'A'
   
 // MAX1230 Control Words
 #define MAX1230_CONVERSION_BYTE                      0b10000011
@@ -472,7 +475,8 @@ extern TYPE_GLOBAL_DATA_A37474 global_data_A37474;
 #define _STATUS_DAC_WRITE_FAILURE                      _WARNING_3
 #define _STATUS_INTERLOCK_INHIBITING_HV                _WARNING_4
 //#define _FPGA_CUSTOMER_HARDWARE_REV_MISMATCH           _WARNING_6
-#define _FPGA_FIRMWARE_MINOR_REV_MISMATCH              _WARNING_5
+//#define _FPGA_FIRMWARE_MINOR_REV_MISMATCH              _WARNING_5
+#define _FAULT_CONVERTER_LOGIC_ADC_READ_FAILURE        _WARNING_5
 #define _FPGA_ARC_COUNTER_GREATER_ZERO                 _WARNING_6
 #define _FPGA_ARC_HIGH_VOLTAGE_INHIBIT_ACTIVE          _WARNING_6
 //#define _FPGA_MODULE_TEMP_GREATER_THAN_65_C            _WARNING_8
