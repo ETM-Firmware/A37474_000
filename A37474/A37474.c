@@ -210,7 +210,10 @@ void DoStateMachine(void) {
     global_data_A37474.current_state_msg = STATE_MESSAGE_START_UP;
     global_data_A37474.watchdog_counter = 0;
     global_data_A37474.analog_output_heater_voltage.set_point = 0;
-    global_data_A37474.heater_start_up_attempts = 0;
+    if (!global_data_A37474.request_heater_enable) {
+      global_data_A37474.heater_start_up_attempts = 0;
+    }
+    global_data_A37474.heater_voltage_current_limited = 0;
     while (global_data_A37474.control_state == STATE_HEATER_DISABLED) {
       DoA37474();
       if (global_data_A37474.request_heater_enable) {
@@ -243,7 +246,11 @@ void DoStateMachine(void) {
         global_data_A37474.control_state = STATE_HEATER_DISABLED;
       }
       if (CheckHeaterFault()) {
-        global_data_A37474.control_state = STATE_FAULT_WARMUP_HEATER_OFF;
+        if (global_data_A37474.heater_start_up_attempts > MAX_HEATER_START_UP_ATTEMPTS) {
+          global_data_A37474.control_state = STATE_FAULT_HEATER_OFF;
+        } else{
+          global_data_A37474.control_state = STATE_FAULT_WARMUP_HEATER_OFF;
+        }
       }
     }
     break;
@@ -276,7 +283,11 @@ void DoStateMachine(void) {
         global_data_A37474.control_state = STATE_HEATER_DISABLED;
       }
       if (CheckHeaterFault()) {
-        global_data_A37474.control_state = STATE_FAULT_WARMUP_HEATER_OFF;
+        if (global_data_A37474.heater_start_up_attempts > MAX_HEATER_START_UP_ATTEMPTS) {
+          global_data_A37474.control_state = STATE_FAULT_HEATER_OFF;
+        } else{
+          global_data_A37474.control_state = STATE_FAULT_WARMUP_HEATER_OFF;
+        }
       }
     }
     break;
@@ -297,7 +308,7 @@ void DoStateMachine(void) {
         global_data_A37474.control_state = STATE_HEATER_DISABLED;
       }
       if (CheckHeaterFault()) {
-        global_data_A37474.control_state = STATE_FAULT_WARMUP_HEATER_OFF;
+        global_data_A37474.control_state = STATE_FAULT_HEATER_OFF;
       }
     }
     break;
@@ -446,7 +457,6 @@ void DoStateMachine(void) {
     DisableBeam();
     DisableHighVoltage();
     DisableHeater();
-    global_data_A37474.request_heater_enable = 0;
     global_data_A37474.current_state_msg = STATE_MESSAGE_FAULT_HEATER_OFF;
     ETMAnalogClearFaultCounters(&global_data_A37474.input_htr_v_mon);
     ETMAnalogClearFaultCounters(&global_data_A37474.input_htr_i_mon);
@@ -478,10 +488,11 @@ void DoStateMachine(void) {
       DoA37474();
       if (global_data_A37474.fault_restart_remaining == 0) {
         global_data_A37474.control_state = STATE_WAIT_FOR_CONFIG;
+        global_data_A37474.reset_active = 0;
       }
-      if (global_data_A37474.heater_start_up_attempts > MAX_HEATER_START_UP_ATTEMPTS) {
-        global_data_A37474.control_state = STATE_FAULT_HEATER_OFF;
-      }
+//      if (global_data_A37474.heater_start_up_attempts > MAX_HEATER_START_UP_ATTEMPTS) {
+//        global_data_A37474.control_state = STATE_FAULT_HEATER_OFF;
+//      }
     }
     break;
 
@@ -1028,7 +1039,6 @@ unsigned int CheckHeaterFault(void) {
   fault |= _FAULT_ADC_HTR_I_MON_UNDER_ABSOLUTE;
   fault |= _FAULT_ADC_DIGITAL_OVER_TEMP;
   fault |= _FAULT_ADC_DIGITAL_GRID;
-//  fault |= _FAULT_CONVERTER_LOGIC_ADC_READ_FAILURE;
   fault |= _FAULT_HEATER_RAMP_TIMEOUT;
   fault |= _FAULT_MUX_CONFIG_FAILURE;
   fault |= _FAULT_CONVERTER_LOGIC_ADC_READ_FAILURE;
@@ -1606,6 +1616,8 @@ void UpdateFaults(void) {
    
   if (global_data_A37474.heater_voltage_current_limited >= HEATER_VOLTAGE_CURRENT_LIMITED_FAULT_TIME) {
     _FAULT_HEATER_VOLTAGE_CURRENT_LIMITED = 1;
+  } else if (global_data_A37474.reset_active) {
+    _FAULT_HEATER_VOLTAGE_CURRENT_LIMITED = 0;
   }
  
   // Evaluate the readings from the Coverter Logic Board ADC
@@ -1830,18 +1842,6 @@ void SetStateMessage (unsigned int message) {
     message |= 0x0200;
   } else {
     message &= ~0x0200;
-  } 
-  
-  if (modbus_slave_bit_0x05 != 0) {
-    message |= 0x0400;
-  } else {
-    message &= ~0x0400;
-  } 
-  
-  if (modbus_slave_bit_0x06 != 0) {
-    message |= 0x0800;
-  } else {
-    message &= ~0x0800;
   } 
   
   global_data_A37474.state_message = message;
