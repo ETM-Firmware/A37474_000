@@ -612,6 +612,11 @@ void InitializeA37474(void) {
   _ADIP = 6; // This needs to be higher priority than the CAN interrupt (Which defaults to 4)
   _ADIE = 1;
   _ADON = 1;
+  
+  
+#ifdef __MODE_MODBUS_MONITOR
+  ETMModbusInit();
+#endif
 
 #if 0  
   // Initialize TCPmodbus Module
@@ -637,14 +642,21 @@ void InitializeA37474(void) {
     ip_config.ip_addr = DEFAULT_IP_ADDRESS;
   }
 #else
+  
+    ip_config.ip_addr =  ((unsigned long)modbus_slave_hold_reg_0x0D << 24) & 0xFF000000;
+    ip_config.ip_addr += ((unsigned long)modbus_slave_hold_reg_0x0C << 16) & 0x00FF0000;
+    ip_config.ip_addr += ((unsigned long)modbus_slave_hold_reg_0x0B << 8) & 0x0000FF00;
+    ip_config.ip_addr += (unsigned long)modbus_slave_hold_reg_0x0A & 0x000000FF;
+  
+    if ((ip_config.ip_addr == 0xFFFFFFFF) || (ip_config.ip_addr == 0x00000000)) {
+      ip_config.ip_addr = DEFAULT_IP_ADDRESS;
+    }
+  
     ip_config.remote_ip_addr = DEFAULT_REMOTE_IP_ADDRESS;
-    ip_config.ip_addr = DEFAULT_IP_ADDRESS;
+
 #endif
   TCPmodbus_init(&ip_config);
 
-#ifdef __MODE_MODBUS_MONITOR
-  ETMModbusInit();
-#endif
   
 
 #ifdef __CAN_ENABLED
@@ -2919,10 +2931,16 @@ void ProcessCommand (MODBUS_MESSAGE * ptr) {
         break;  
       }
       byte_index = ptr->data_address;
-      ModbusSlaveHoldingRegister[byte_index] = ptr->write_value;
-      ETMEEPromWriteWord(0x600 + byte_index, ptr->write_value);
+
       if ((byte_index > 9) && (byte_index < 14)) {                     // If holding reg's 0x0A - 0x0D change
-        SetCustomIP();                                                 // IP address change was made
+        if (ptr->write_value < 256) {
+          ModbusSlaveHoldingRegister[byte_index] = ptr->write_value;
+          ETMEEPromWriteWord(0x600 + byte_index, ptr->write_value);             
+          SetCustomIP();                                                 // IP address change was made
+        }
+      } else {
+        ModbusSlaveHoldingRegister[byte_index] = ptr->write_value;
+        ETMEEPromWriteWord(0x600 + byte_index, ptr->write_value);  
       }
       break;
       
