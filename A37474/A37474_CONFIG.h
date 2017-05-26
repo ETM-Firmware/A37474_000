@@ -204,7 +204,7 @@
 #ifdef __CAN_CONTROLS
 #define HEATER_WARM_UP_TIME 100       //18000     // In Can control mode the heater warm up time is enforced by the ECB
 #else
-#define HEATER_WARM_UP_TIME 12000     // 2 minutes
+#define HEATER_WARM_UP_TIME 6000     // 1 minute
 #endif
 
 
