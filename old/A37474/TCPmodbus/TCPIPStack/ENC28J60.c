@@ -84,8 +84,8 @@
 // not compatible with most switches/routers.  If a dedicated network is used
 // where the duplex of the remote node can be manually configured, you may
 // change this configuration.  Otherwise, half duplex should always be used.
-//#define HALF_DUPLEX
-#define FULL_DUPLEX
+#define HALF_DUPLEX
+//#define FULL_DUPLEX
 //#define LEDB_DUPLEX
 
 // Pseudo Functions

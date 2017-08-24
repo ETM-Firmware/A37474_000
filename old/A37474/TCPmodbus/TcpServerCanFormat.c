@@ -147,7 +147,7 @@ signed char tcp_can_output_put_ptr;  // pointer to put data into buffer
   Returns:
   	None
   ***************************************************************************/
-void GenericTCPServer(unsigned int resetTCP)
+void GenericTCPServer(void)
 {
 	WORD wMaxGet, wMaxPut;
 	int buf_room;
@@ -159,10 +159,6 @@ void GenericTCPServer(unsigned int resetTCP)
 		SM_LISTENING,
         SM_CLOSING,
 	} TCPServerState = SM_HOME;
-    
-    if (resetTCP) {
-      TCPServerState = SM_CLOSING;
-    }
 
 	switch(TCPServerState)
 	{
@@ -258,14 +254,6 @@ int TcpCanGotCommand(void)
     return (tcp_can_input_put_ptr != tcp_can_input_get_ptr);
 }
 
-// TcpCanGotResponse() returns TRUE if there is data to sendout
-//
-int TcpCanGotResponse(void)
-{
-    return (tcp_can_output_put_ptr != tcp_can_output_get_ptr);
-    
-}
-
 /////////////////////////////////////////////////////////////////////////
 // XmitPtr() returns the transmitter pointer.  It exists to keep
 // really smart compilers from optimizing out references to volatile
@@ -341,7 +329,7 @@ void CanProcessCommand(unsigned char length, unsigned char * data)
 	        txData[6] = ' ';
 	        txData[7] = ' ';
             #else
-	    	txData[4] = INTERFACE_HARDWARE_REV;   //TARGET_CUSTOMER_HARDWARE_REV & 0xff;
+	    	txData[4] = TARGET_CUSTOMER_HARDWARE_REV & 0xff;
 	        txData[5] = 0;
 	        txData[6] = 0;
 	        txData[7] = 0;
@@ -381,35 +369,33 @@ void CanProcessCommand(unsigned char length, unsigned char * data)
 
     case SDO_IDX_RESET_CMD:
     	if (is_upload)
-            txData[4] = (unsigned char) global_data_A37474.reset_active & 0xff; //sdo_reset_cmd_active;
+            txData[4] = sdo_reset_cmd_active;
         else if (data[4] == 0 || data[4] == 0xff) {
 
       //  	if (!sdo_reset_cmd_active && data[4])  
-        	if (data[4])  global_data_A37474.ethernet_reset_cmd = 1;          //sdo_logic_reset = 1;	 
-//    		sdo_reset_cmd_active = data[4];	
-//            if (sdo_reset_cmd_active)
-//            	PIN_HV_ON_SERIAL = !OLL_SERIAL_ENABLE; // turn off hv when reset is active 
+        	if (data[4]) sdo_logic_reset = 1;	 
+    		sdo_reset_cmd_active = data[4];	
+            if (sdo_reset_cmd_active)
+            	PIN_HV_ON_SERIAL = !OLL_SERIAL_ENABLE; // turn off hv when reset is active 
         }
         // else	do nothing
         	
      break;
 
-  
+#if 0  // NA for now  
     case SDO_IDX_ZERO_HTD:
     	if (is_upload)
             txData[4] = sdo_htd_timer_reset;
         else if (data[4] == 0xff) {        
-//          //	if (!sdo_htd_timer_reset) {
-//    			sdo_htd_timer_reset = 0xff;	
-//                software_skip_warmup = 1; 
-//          //  } 
-          sdo_htd_timer_reset = 0xff;
-          global_data_A37474.heater_warm_up_time_remaining = 300;   //set remaining warmup to 3s
+          //	if (!sdo_htd_timer_reset) {
+    			sdo_htd_timer_reset = 0xff;	
+                software_skip_warmup = 1; 
+          //  } 
         }
         else
             sdo_htd_timer_reset = 0;	    
      break;
-     
+#endif     
      
     case SDO_IDX_HTR_CMD:
     	if (is_upload)
@@ -448,12 +434,9 @@ void CanProcessCommand(unsigned char length, unsigned char * data)
         else if (data[4] == 0 || data[4] == 0xff) {
 
           //	if (sdo_hv_enable != data[4]) { // only act when value changes
-//            	if (data[4] && sdo_reset_cmd_active == 0)  PIN_HV_ON_SERIAL = OLL_SERIAL_ENABLE;
-//                else if (data[4] == 0)		  			   PIN_HV_ON_SERIAL = !OLL_SERIAL_ENABLE;;	 // either hv off or reset command
+            	if (data[4] && sdo_reset_cmd_active == 0)  PIN_HV_ON_SERIAL = OLL_SERIAL_ENABLE;
+                else if (data[4] == 0)		  			   PIN_HV_ON_SERIAL = !OLL_SERIAL_ENABLE;;	 // either hv off or reset command
                 
-                if (data[4])  PIN_HV_ON_SERIAL = OLL_SERIAL_ENABLE;
-                else          PIN_HV_ON_SERIAL = !OLL_SERIAL_ENABLE;
-            
                 sdo_hv_enable = data[4];	 
           // }	 
         }
@@ -505,12 +488,10 @@ void CanProcessCommand(unsigned char length, unsigned char * data)
         	// check max, min range
             set_value  = (unsigned int)data[5] << 8;
             set_value += (unsigned int)data[4];
-            global_data_A37474.ethernet_htr_ref = set_value;
-            ETMEEPromWriteWord(0x680, set_value);
-//            if (set_value <= MAX_PROGRAM_HTR_VOLTAGE)
-//            {                        
-//	        	global_data_A37474.heater_voltage_target = set_value;
-//            }
+            if (set_value <= MAX_PROGRAM_HTR_VOLTAGE)
+            {                        
+	        	global_data_A37474.heater_voltage_target = set_value;
+            }
         }
     
      break;
@@ -524,12 +505,10 @@ void CanProcessCommand(unsigned char length, unsigned char * data)
         	// check max, min range
             set_value  = (unsigned int)data[5] << 8;
             set_value += (unsigned int)data[4];
-            global_data_A37474.ethernet_top_ref = set_value;
-            ETMEEPromWriteWord(0x681, set_value);
-//            if (set_value <= TOP_VOLTAGE_MAX_SET_POINT)  
-//            {    
-//            	ETMAnalogSetOutput(&global_data_A37474.analog_output_top_voltage, set_value);                    
-// 			}
+            if (set_value <= TOP_VOLTAGE_MAX_SET_POINT)  
+            {    
+            	ETMAnalogSetOutput(&global_data_A37474.analog_output_top_voltage, set_value);                    
+ 			}
        }
         
      break;
@@ -543,12 +522,10 @@ void CanProcessCommand(unsigned char length, unsigned char * data)
         	// check max, min range
             set_value  = (unsigned int)data[5] << 8;
             set_value += (unsigned int)data[4];
-            global_data_A37474.ethernet_hv_ref = set_value;
-            ETMEEPromWriteWord(0x682, set_value);
-//            if (set_value >= HIGH_VOLTAGE_MIN_SET_POINT && set_value <= HIGH_VOLTAGE_MAX_SET_POINT)  
-//            {            
-//            	ETMAnalogSetOutput(&global_data_A37474.analog_output_high_voltage, set_value);                    
-//            }
+            if (set_value >= HIGH_VOLTAGE_MIN_SET_POINT && set_value <= HIGH_VOLTAGE_MAX_SET_POINT)  
+            {            
+            	ETMAnalogSetOutput(&global_data_A37474.analog_output_high_voltage, set_value);                    
+            }
         }
         
      break;
@@ -571,9 +548,8 @@ void CanProcessCommand(unsigned char length, unsigned char * data)
      
     case SDO_IDX_EC_READ:
      	if (is_upload) {
-            set_value = global_data_A37474.input_bias_v_mon.reading_scaled_and_calibrated / 10;
-        	txData[4] = set_value & 0x00ff;
-        	txData[5] = (set_value >> 8) & 0x00ff;        
+        	txData[4] = global_data_A37474.input_bias_v_mon.reading_scaled_and_calibrated & 0x00ff;
+        	txData[5] = (global_data_A37474.input_bias_v_mon.reading_scaled_and_calibrated >> 8) & 0x00ff;        
     	}
      break;
 		 
@@ -594,9 +570,8 @@ void CanProcessCommand(unsigned char length, unsigned char * data)
 
     case SDO_IDX_IKP_READ:
     	if (is_upload) {
-            set_value = global_data_A37474.input_gun_i_peak.reading_scaled_and_calibrated /10;
-        	txData[4] = set_value & 0x00ff;
-        	txData[5] = (set_value >> 8) & 0x00ff;        
+        	txData[4] = global_data_A37474.input_gun_i_peak.reading_scaled_and_calibrated & 0x00ff;
+        	txData[5] = (global_data_A37474.input_gun_i_peak.reading_scaled_and_calibrated >> 8) & 0x00ff;        
     	}
      break;
 		
@@ -617,18 +592,18 @@ void CanProcessCommand(unsigned char length, unsigned char * data)
 
     case SDO_IDX_GD_STATE:
     	if (is_upload) {        
-        	txData[4] = global_data_A37474.state_message & 0x00ff;
-            txData[5] = (global_data_A37474.state_message >> 8) & 0x00ff;
+        	txData[4] = global_data_A37474.current_state_msg & 0x00ff;
+            txData[5] = (global_data_A37474.current_state_msg >> 8) & 0x00ff;
             
-//        	if (sdo_htr_enable)      	txData[6] |= 0x0001;
-//            if (sdo_hv_enable)  	 	txData[6] |= 0x0008;
-//            if (sdo_pulsetop_enable) 	txData[6] |= 0x0004;
-//            if (sdo_trig_enable)     	txData[6] |= 0x0010;
-//            if (sdo_reset_cmd_active)	txData[6] |= 0x0020;
-//            if (sdo_hv_bypass)			txData[6] |= 0x0040;
-//            
-//            if (PIN_CUSTOMER_HV_ON == ILL_PIN_CUSTOMER_HV_ON_ENABLE_HV)  	 			txData[7] |= 0x0008;
-//            if (PIN_CUSTOMER_BEAM_ENABLE == ILL_PIN_CUSTOMER_BEAM_ENABLE_BEAM_ENABLED)  txData[7] |= 0x0010;
+        	if (sdo_htr_enable)      	txData[6] |= 0x0001;
+            if (sdo_hv_enable)  	 	txData[6] |= 0x0008;
+            if (sdo_pulsetop_enable) 	txData[6] |= 0x0004;
+            if (sdo_trig_enable)     	txData[6] |= 0x0010;
+            if (sdo_reset_cmd_active)	txData[6] |= 0x0020;
+            if (sdo_hv_bypass)			txData[6] |= 0x0040;
+            
+            if (PIN_CUSTOMER_HV_ON == ILL_PIN_CUSTOMER_HV_ON_ENABLE_HV)  	 			txData[7] |= 0x0008;
+            if (PIN_CUSTOMER_BEAM_ENABLE == ILL_PIN_CUSTOMER_BEAM_ENABLE_BEAM_ENABLED)  txData[7] |= 0x0010;
  
      	}    
     
