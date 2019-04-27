@@ -22,11 +22,11 @@
 #define __MODE_MODBUS_MONITOR
 #define __OPTION_ENABLE_CAN
 #define OLL_PIN_CPU_HV_ENABLE_HV_ENABLED        1
-#define HEATER_RAMP_TIME                        21000        // 3.5min
-#define RAMP_TIME_INTERVAL                      30           // 300ms
+#define HEATER_RAMP_TIME                        33000        // 5.5min
+#define RAMP_TIME_INTERVAL                      71           // 710ms
 #define MAX_PROGRAM_HTR_VOLTAGE                 8000         // 8.0 V
-#define MAX_RAMP_HTR_I                          4200         // 4.200 Amps
-#define HTR_OC_ABS                              4400         // 4.400 Amps
+#define MAX_RAMP_HTR_I                          1420         // 1.420 Amps
+#define HTR_OC_ABS                              1600         // 1.600 Amps
 #define HV_MAX_SET_BOARD_SPEC                   20000        // -20KV
 #define HV_MIN_SET_BOARD_SPEC                   0            // 0KV
 #define TOP_MAX_SET_BOARD_SPEC                  22000        // 140V
