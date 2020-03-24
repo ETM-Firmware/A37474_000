@@ -1,7 +1,12 @@
-// This is firmware for the Gun Driver Board
+/*
+  -------------------------------------------
+  This is firmware for the Gun Driver Board A37474-000
+  
+  Tyler Evans
+  3.24.20
 
-
-// DPARKER - IF there is an error writing to the offboard DAC we probably need to re-write the entire DAC to ensure that data is correct
+  --------------------------------------------
+ */
 
 #include "A37474.h"
 #include "A37474_CONFIG.h"
@@ -13,6 +18,8 @@ _FBS(WR_PROTECT_BOOT_OFF & NO_BOOT_CODE & NO_BOOT_EEPROM & NO_BOOT_RAM);
 _FSS(WR_PROT_SEC_OFF & NO_SEC_CODE & NO_SEC_EEPROM & NO_SEC_RAM);
 _FGS(CODE_PROT_OFF);
 _FICD(PGD);
+
+unsigned long timer_write_holding_var_10ms;
 
 void DoStateMachine(void); // This handles the state machine for the interface board
 void InitializeA37474(void); // Initialize the A37474 for operation
@@ -39,32 +46,21 @@ unsigned int GetModbusResetEnable(void);
 #ifdef __noModbusLibrary
 
 unsigned char modbus_cmd_byte[8];
-
 unsigned int ETM_modbus_state;
-
 unsigned int ModbusTimer;
 unsigned int ModbusTest;
-
 unsigned int ModbusSlaveHoldingRegister[SLAVE_HOLD_REG_ARRAY_SIZE];
 unsigned int ModbusSlaveInputRegister[SLAVE_INPUT_REG_ARRAY_SIZE];
 unsigned int ModbusSlaveBit[SLAVE_BIT_ARRAY_SIZE];
-
-
 unsigned char modbus_transmission_needed = 0;
 unsigned char modbus_receiving_flag = 0;
 unsigned char ETM_last_modbus_fail = 0;
-
 unsigned char modbus_slave_invalid_data = 0;
-
-//static MODBUS_RESP_SMALL*  ETMmodbus_resp_ptr[ETMMODBUS_CMD_QUEUE_SIZE];
 
 BUFFERBYTE64 uart1_input_buffer;
 BUFFERBYTE64 uart1_output_buffer;
 
 MODBUS_MESSAGE current_command_ptr;
-
-//static unsigned char normal_reply_length;
-
 
 void ETMModbusInit(void);
 void ETMModbusSlaveDoModbus(void);
@@ -137,8 +133,6 @@ unsigned char SPICharInverted(unsigned char transmit_byte);
 // Digital Input Functions (NEEDS and ETM Module)
 //void ETMDigitalInitializeInput(TYPE_DIGITAL_INPUT* input, unsigned int initial_value, unsigned int filter_time);
 //void ETMDigitalUpdateInput(TYPE_DIGITAL_INPUT* input, unsigned int current_value);
-
-
 
 
 // -------------------------- GLOBAL VARIABLES --------------------------- //
@@ -509,15 +503,17 @@ void InitializeA37474(void) {
 
 
     // ---------- Configure Timers ----------------- //
+    
+    ETMTickInitialize(FCY_CLK, ETM_TICK_USE_TIMER_2);
 
-    // Initialize TMR2
+    /*// Initialize TMR2
     PR2 = A37474_PR2_VALUE;
     TMR2 = 0;
     _T2IF = 0;
     //  _T2IP = 5;
     _T2IP = 2;
     T2CON = A37474_T2CON_VALUE;
-
+*/
     // Initialize TMR3
     PR3 = A37474_PR3_VALUE;
     TMR3 = 0;
@@ -1073,10 +1069,7 @@ void DoA37474(void) {
 
 
     //--------- Following happens every 10ms ------------//  
-
-    if (_T2IF) {
-        // Run once every 10ms
-        _T2IF = 0;
+    if (ETMTickRunOnceEveryNMilliseconds(10, &timer_write_holding_var_10ms)) {
 
         unsigned int timer_report;
         unsigned int read_mux;

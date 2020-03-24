@@ -18,7 +18,6 @@
 #include <spi.h>
 #include <uart.h>
 #include "ETM.h"
-//#include "P1395_CAN_SLAVE.h"
 #include "MCP23008.h"
 #include "FIRMWARE_VERSION.h"
 #include "TCPmodbus\TCPmodbus.h"
