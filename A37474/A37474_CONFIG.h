@@ -1,57 +1,40 @@
+/*
+  -------------------------------------------
+  This file contains configuration data specific to the A37474-000
+  
+  Tyler Evans
+  3.19.20
+
+  --------------------------------------------
+*/
+
 #ifndef __A37474_CONFIG_H
 #define __A37474_CONFIG_H
 
-//-----------------------Specific board selections---------------------
 
-
-//#define __A37474_000_TEST_GUN
 #define __A37474_000
 
 
-
 // Make sure that at least one board is selected
-#ifndef __A37474_000_TEST_GUN
 #ifndef __A37474_000
 #error "No Specific Board Selected"
-#endif
 #endif
 
 
 #ifdef __A37474_000
 #define __MODE_ETHERNET_INTERFACE
 #define __MODE_MODBUS_MONITOR
-#define __OPTION_ENABLE_CAN
 #define OLL_PIN_CPU_HV_ENABLE_HV_ENABLED        1
-#define HEATER_RAMP_TIME                        42000        // 7min
-#define RAMP_TIME_INTERVAL                      71           // 710ms
-#define MAX_PROGRAM_HTR_VOLTAGE                 8000         // 8.0 V
-#define MAX_RAMP_HTR_I                          1420         // 1.420 Amps
+#define MAX_HEATER_RAMP_UP_TIME                 42000        // 7min If the heater does not reach it's programed voltage in this time a fault will be generated.
+#define HEATER_RAMP_UP_TIME_PERIOD              71           // 710ms During heater ramp up, the heater voltage will be increased every N 10ms.
+#define MAX_PROGRAM_HTR_VOLTAGE                 8000         // 8V Limit on what customer can set
+#define HEATER_VOLTAGE_MAX_SET_POINT            8000         // 8V Actual limit
+#define HEATER_VOLTAGE_MIN_SET_POINT            0            // 0V Lower Limit on Heater Voltage
+#define MAX_HEATER_CURRENT_DURING_RAMP_UP       1420         // 1.420 Amps. [mA Units]. Whenever the heater voltage is increased (ramp-up or increasing the set point).  The voltage will be current limited by this current
 #define HTR_OC_ABS                              1600         // 1.600 Amps
 #define HV_MAX_SET_BOARD_SPEC                   20000        // -20KV
 #define HV_MIN_SET_BOARD_SPEC                   0            // 0KV
 #define TOP_MAX_SET_BOARD_SPEC                  22000        // 140V
-#define TOP_MIN_SET_BOARD_SPEC                  0            // -80V
-#define BIAS_OVER_VOLTAGE                       18000        // -180V
-#define BIAS_UNDER_VOLTAGE                      14000        // -140V
-#define BOARD_DASH_NUMBER                       000
-#ifdef  __A37474_000_TEST_GUN
-#error "Multiple boards selected"
-#endif
-#endif
-
-#ifdef __A37474_000_TEST_GUN
-#define __MODE_ETHERNET_INTERFACE
-#define __MODE_MODBUS_MONITOR
-#define __OPTION_ENABLE_CAN
-#define OLL_PIN_CPU_HV_ENABLE_HV_ENABLED        1
-#define HEATER_RAMP_TIME                        42000        // 7min
-#define RAMP_TIME_INTERVAL                      60           // 600ms
-#define MAX_PROGRAM_HTR_VOLTAGE                 8000         // 8.0 V
-#define MAX_RAMP_HTR_I                          1650         // 1.650 Amps
-#define HTR_OC_ABS                              1750         // 1.750 Amps
-#define HV_MAX_SET_BOARD_SPEC                   20000        // -20KV
-#define HV_MIN_SET_BOARD_SPEC                   0            // 0KV
-#define TOP_MAX_SET_BOARD_SPEC                  40000        // 320V
 #define TOP_MIN_SET_BOARD_SPEC                  0            // -80V
 #define BIAS_OVER_VOLTAGE                       18000        // -180V
 #define BIAS_UNDER_VOLTAGE                      14000        // -140V
@@ -139,7 +122,6 @@
 #endif
 
 
-
 // -------------- Interface board Configuration ---------------------
 
 #define SELECT_HV_ENABLE_FIBER                0xFF
@@ -164,41 +146,28 @@
 #define PULSE_GATE_DISCRETE                   0xFF
 
 
-#ifdef A37474_000
-
+#ifdef __A37474_000
 #define CONFIG_SELECT_PIN_BYTE               (SELECT_HV_ENABLE_SERIAL & SELECT_BEAM_ENABLE_SERIAL & SELECT_HV_ILOCK_EXTERNAL_CONTROL & PULSE_GATE_DISCRETE)
-
 #endif
-
-// for test
-#define CONFIG_SELECT_PIN_BYTE               (SELECT_HV_ENABLE_SERIAL & SELECT_BEAM_ENABLE_SERIAL & SELECT_HV_ILOCK_EXTERNAL_CONTROL & PULSE_GATE_DISCRETE)
-
 
 
 // ----------- Timers configurations - ALL Times are in 10ms Units --------------------
 #define LED_STARTUP_FLASH_TIME                500      // Time LEDs will flash at startup
-#define MAX_HEATER_RAMP_UP_TIME               HEATER_RAMP_TIME    // (7min) If the heater does not reach it's programed voltage in this time a fault will be generated
 #define HEATER_AUTO_RESTART_TIME              500      // Time delay between a heater fault and when the heater gets restarted
-#define HEATER_RAMP_UP_TIME_PERIOD            RAMP_TIME_INTERVAL  // (300ms) During heater ramp up, the heater voltage will be increased every N 10ms (see HEATER_RAMP_UP_INCREMENT)
 #define GUN_DRIVER_POWER_SUPPLY_STARTUP_TIME  100      // Wait this long between enabling High Voltage / Pulse Top / Bias and cheching that they are at correct values
-
 #define HEATER_REGULATION_TIME_PERIOD         5        // (50ms) This is the period that the regulation of the heater voltage takes between increments
 
 // System control Parameters
-#define MAX_HEATER_CURRENT_DURING_RAMP_UP     MAX_RAMP_HTR_I    //1650     // mA Units.  Whenever the heater voltage is increased (ramp-up or increasing the set point).  The voltage will be current limited by this current
 #define MAX_CONVERTER_LOGIC_ADC_READ_ERRORS   20       // If the ADC read exceeds this number a fault will be created
 #define MAX_HEATER_START_UP_ATTEMPTS          5        // If the heater ramp up process does not succeed in this many attempts, a fault will be generated that requires power cycle
 #define MAX_DAC_TX_ATTEMPTS                   10       // The pic will attempt to write to the Converter Logic DAC this many times before giving up
 #define HEATER_RAMP_UP_INCREMENT              10       // mV Units.  When ramping up the heater voltage it is increased by this amount each HEATER_RAMP_UP_TIME_PERIOD
-
-#define HEATER_REGULATION_INCREMENT           50       // (50mV) This is the regulation increment for the heater voltage
-
+#define HEATER_REGULATION_INCREMENT           50       // mV Units.  This is the regulation increment for the heater voltage
 
 
 #define HEATER_VOLTAGE_CURRENT_LIMITED_FAULT_TIME   500 // 5 Seconds
-
-#define CURRENT_LIMITED_FAULT_HOLDOFF_TIME    10      // 10 seconds at the start of heater warmup before current limit fault is timed
-#define FAULT_HOLDOFF_STATE                   22
+#define CURRENT_LIMITED_FAULT_HOLDOFF_TIME          10  // 10 seconds at the start of heater warmup before current limit fault is timed
+#define FAULT_HOLDOFF_STATE                         22
 
 
 #ifdef __CAN_CONTROLS
@@ -206,8 +175,6 @@
 #else
 #define HEATER_WARM_UP_TIME 6000     // 1 minute
 #endif
-
-
 
 
 // ------------- Converter Logic Board ADC Input Settings ---------------------
@@ -279,17 +246,12 @@
 
 #define DAC_TOP_VOLTAGE_FIXED_SCALE           1.5000
 #define DAC_TOP_VOLTAGE_FIXED_OFFSET          0
-//#define TOP_VOLTAGE_MAX_SET_POINT             26000                             // 180V
-//#define TOP_VOLTAGE_MAX_SET_POINT             40000                             // 320V
 #define TOP_VOLTAGE_MAX_SET_POINT             TOP_MAX_SET_BOARD_SPEC
 #define TOP_VOLTAGE_MIN_SET_POINT             TOP_MIN_SET_BOARD_SPEC
-//#define TOP_VOLTAGE_MIN_SET_POINT             4000                              // -40V
 
 
 #define DAC_HEATER_VOLTAGE_FIXED_SCALE        7.5188
 #define DAC_HEATER_VOLTAGE_FIXED_OFFSET       0
-#define HEATER_VOLTAGE_MAX_SET_POINT          8000                              // 8V
-#define HEATER_VOLTAGE_MIN_SET_POINT          0                                 // 0V
 
 
 
