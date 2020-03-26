@@ -11,9 +11,7 @@
 #ifndef __A37474_CONFIG_H
 #define __A37474_CONFIG_H
 
-
 #define __A37474_000
-
 
 // Make sure that at least one board is selected
 #ifndef __A37474_000
@@ -157,6 +155,7 @@
 #define GUN_DRIVER_POWER_SUPPLY_STARTUP_TIME  100      // Wait this long between enabling High Voltage / Pulse Top / Bias and cheching that they are at correct values
 #define HEATER_REGULATION_TIME_PERIOD         5        // (50ms) This is the period that the regulation of the heater voltage takes between increments
 
+
 // System control Parameters
 #define MAX_CONVERTER_LOGIC_ADC_READ_ERRORS   20       // If the ADC read exceeds this number a fault will be created
 #define MAX_HEATER_START_UP_ATTEMPTS          5        // If the heater ramp up process does not succeed in this many attempts, a fault will be generated that requires power cycle
@@ -184,72 +183,74 @@
 #define ADC_TEMPERATURE_SENSOR_FIXED_SCALE    1.25
 #define ADC_TEMPERATURE_SENSOR_FIXED_OFFSET   0
 
-
+//HV Input
 #define ADC_HV_VMON_FIXED_SCALE               .34722
 #define ADC_HV_VMON_FIXED_OFFSET              0
 #define ADC_HV_VMON_RELATIVE_TRIP_SCALE       MACRO_DEC_TO_CAL_FACTOR_2(.2)
 #define ADC_HV_VMON_RELATIVE_TRIP_FLOOR       1000                     
-#define ADC_HV_VMON_RELATIVE_TRIP_COUNT       50                                // 500mS
+#define ADC_HV_VMON_RELATIVE_TRIP_COUNT       500                       // 500mS
 
-
+//HV_I Input
 #define ADC_HV_IMON_FIXED_SCALE               .10419
 #define ADC_HV_IMON_FIXED_OFFSET              0
 
-
+//Gun I Peak Input
 #define ADC_GUN_I_PEAK_FIXED_SCALE            .17313
 #define ADC_GUN_I_PEAK_FIXED_OFFSET           0
 
-
+//HTR Input
 #define ADC_HTR_V_MON_FIXED_SCALE             .13875
 #define ADC_HTR_V_MON_FIXED_OFFSET            0
 #define ADC_HTR_V_MON_RELATIVE_TRIP_SCALE     MACRO_DEC_TO_CAL_FACTOR_2(.2)
-#define ADC_HTR_V_MON_RELATIVE_TRIP_FLOOR     200                               // Minimum 200mV
-#define ADC_HTR_V_MON_RELATIVE_TRIP_COUNT     50                                // 500mS
+#define ADC_HTR_V_MON_RELATIVE_TRIP_FLOOR     200               // Minimum 200mV
+#define ADC_HTR_V_MON_RELATIVE_TRIP_COUNT     500               // 500mS
 
-
+//HTR I Input
 #define ADC_HTR_I_MON_FIXED_SCALE             .10419
 #define ADC_HTR_I_MON_FIXED_OFFSET            0
-#define ADC_HTR_I_MON_OVER_LIMIT_ABSOLUTE     HTR_OC_ABS    //1750                              // 1.750 Amps
-#define ADC_HTR_I_MON_UNDER_LIMIT_ABSOLUTE    200                               // 0.200 Amps
-#define ADC_HTR_I_MON_ABSOLUTE_TRIP_TIME      50                                // 500mS
+#define ADC_HTR_I_MON_OVER_LIMIT_ABSOLUTE     HTR_OC_ABS          // 1.750 Amps
+#define ADC_HTR_I_MON_UNDER_LIMIT_ABSOLUTE    200                 // 0.200 Amps
+#define ADC_HTR_I_MON_ABSOLUTE_TRIP_TIME      500                 // 500mS
 
-
+//TOP Input
 #define ADC_TOP_V_MON_FIXED_SCALE             .69438
 #define ADC_TOP_V_MON_FIXED_OFFSET            0
 #define ADC_TOP_V_MON_RELATIVE_TRIP_SCALE     MACRO_DEC_TO_CAL_FACTOR_2(.2)
-#define ADC_TOP_V_MON_RELATIVE_TRIP_FLOOR     1000                              // 10 Volts
-#define ADC_TOP_V_MON_RELATIVE_TRIP_TIME      50                                // 500mS 
+#define ADC_TOP_V_MON_RELATIVE_TRIP_FLOOR     1000                  // 10 Volts
+#define ADC_TOP_V_MON_RELATIVE_TRIP_TIME      500                   // 500mS 
 
-
+//Bias Input
 #define ADC_BIAS_V_MON_FIXED_SCALE            .34688
 #define ADC_BIAS_V_MON_FIXED_OFFSET           0
 #define ADC_BIAS_V_MON_OVER_LIMIT_ABSOLUTE    BIAS_OVER_VOLTAGE
 #define ADC_BIAS_V_MON_UNDER_LIMIT_ABSOLUTE   BIAS_UNDER_VOLTAGE
-#define ADC_BIAS_V_MON_ABSOLUTE_TRIP_TIME     50                                // 500mS 
+#define ADC_BIAS_V_MON_ABSOLUTE_TRIP_TIME     500                      // 500mS 
 
-
+//24V Input
 #define ADC_24_V_MON_FIXED_SCALE              .41688
 #define ADC_24_V_MON_FIXED_OFFSET             0
 
-
+//Temp Input
 #define ADC_TEMPERATURE_MON_FIXED_SCALE       .08331
 #define ADC_TEMPERATURE_MON_FIXED_OFFSET      20400
 
 
 
 // --------------------- Converter Logic Board DAC output Settings -------------- //
+
+//HV Ouput
 #define DAC_HIGH_VOLTAGE_FIXED_SCALE          3.0000
 #define DAC_HIGH_VOLTAGE_FIXED_OFFSET         0
 #define HIGH_VOLTAGE_MAX_SET_POINT            HV_MAX_SET_BOARD_SPEC
 #define HIGH_VOLTAGE_MIN_SET_POINT            HV_MIN_SET_BOARD_SPEC
 
-
+//Top Output
 #define DAC_TOP_VOLTAGE_FIXED_SCALE           1.5000
 #define DAC_TOP_VOLTAGE_FIXED_OFFSET          0
 #define TOP_VOLTAGE_MAX_SET_POINT             TOP_MAX_SET_BOARD_SPEC
 #define TOP_VOLTAGE_MIN_SET_POINT             TOP_MIN_SET_BOARD_SPEC
 
-
+//Heater Output
 #define DAC_HEATER_VOLTAGE_FIXED_SCALE        7.5188
 #define DAC_HEATER_VOLTAGE_FIXED_OFFSET       0
 
@@ -269,6 +270,5 @@
 //----  TCPmodbus ----
 #define DEFAULT_REMOTE_IP_ADDRESS                            0x0F46A8C0  // 192.168.70.15
 #define DEFAULT_IP_ADDRESS                                   0x6346A8C0  // 192.168.70.99
-
 
 #endif

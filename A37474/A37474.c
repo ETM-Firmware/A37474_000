@@ -2,6 +2,7 @@
   -------------------------------------------
   This is firmware for the Gun Driver Board A37474-000
   
+  Re-Written with double buffered EEPROMs and Library 5
   Tyler Evans
   3.24.20
 
@@ -87,7 +88,6 @@ void EnableTopSupply(void);
 void EnableBeam(void);
 void DisableBeam(void);
 
-
 /*
   -------------------- Converter Logic Board Helper Functions -----------------------
  */
@@ -130,11 +130,6 @@ unsigned char SPICharInverted(unsigned char transmit_byte);
  */
 
 
-// Digital Input Functions (NEEDS and ETM Module)
-//void ETMDigitalInitializeInput(TYPE_DIGITAL_INPUT* input, unsigned int initial_value, unsigned int filter_time);
-//void ETMDigitalUpdateInput(TYPE_DIGITAL_INPUT* input, unsigned int current_value);
-
-
 // -------------------------- GLOBAL VARIABLES --------------------------- //
 TYPE_GLOBAL_DATA_A37474 global_data_A37474;
 LTC265X U32_LTC2654;
@@ -149,7 +144,6 @@ int main(void) {
 
 void DoStateMachine(void) {
     switch (global_data_A37474.control_state) {
-
 
         case STATE_START_UP:
             InitializeA37474();
@@ -182,7 +176,6 @@ void DoStateMachine(void) {
             ResetAllFaultInfo();
             global_data_A37474.control_state = STATE_HEATER_DISABLED;
             break;
-
 
         case STATE_HEATER_DISABLED:
             DisableHeater();
@@ -219,7 +212,6 @@ void DoStateMachine(void) {
             global_data_A37474.current_state_msg = STATE_MESSAGE_HEATER_RAMP_UP;
             while (global_data_A37474.control_state == STATE_HEATER_RAMP_UP) {
                 DoA37474();
-                //if (global_data_A37474.analog_output_heater_voltage.set_point >= global_data_A37474.heater_voltage_target) {
                 if (ETMAnalogOutputGetSetPoint(&global_data_A37474.analog_output_heater_voltage) >= global_data_A37474.heater_voltage_target) {
                     global_data_A37474.control_state = STATE_HEATER_WARM_UP;
                 }
@@ -235,7 +227,6 @@ void DoStateMachine(void) {
                 }
             }
             break;
-
 
         case STATE_HEATER_WARM_UP:
             DisableBeam();
@@ -272,7 +263,6 @@ void DoStateMachine(void) {
             }
             break;
 
-
         case STATE_HEATER_WARM_UP_DONE:
             DisableBeam();
             DisableHighVoltage();
@@ -292,7 +282,6 @@ void DoStateMachine(void) {
             }
             break;
 
-
         case STATE_POWER_SUPPLY_RAMP_UP:
             DisableBeam();
             EnableHighVoltage();
@@ -300,7 +289,6 @@ void DoStateMachine(void) {
             global_data_A37474.power_supply_startup_remaining = GUN_DRIVER_POWER_SUPPLY_STARTUP_TIME;
             while (global_data_A37474.control_state == STATE_POWER_SUPPLY_RAMP_UP) {
                 DoA37474();
-
                 if (global_data_A37474.power_supply_startup_remaining == 0) {
                     global_data_A37474.control_state = STATE_HV_ON;
                 }
@@ -315,7 +303,6 @@ void DoStateMachine(void) {
                 }
             }
             break;
-
 
         case STATE_HV_ON:
             DisableBeam();
@@ -437,7 +424,6 @@ void DoStateMachine(void) {
             }
             break;
 
-
         case STATE_FAULT_WARMUP_HEATER_OFF:
             DisableBeam();
             DisableHighVoltage();
@@ -456,7 +442,6 @@ void DoStateMachine(void) {
             }
             break;
 
-
         case STATE_FAULT_HEATER_FAILURE:
             DisableBeam();
             DisableHighVoltage();
@@ -468,21 +453,17 @@ void DoStateMachine(void) {
             }
             break;
 
-
         default:
             global_data_A37474.control_state = STATE_FAULT_HEATER_OFF;
             break;
-
     }
 }
 
 void InitializeA37474(void) {
     IPCONFIG ip_config;
-    //unsigned int i2c_test = 0;
 
     // --------- BEGIN IO PIN CONFIGURATION ------------------
-
-    // Initialize Ouput Pin Latches BEFORE setting the pins to Output
+    // Initialize Output Pin Latches BEFORE setting the pins to Output
     PIN_CS_DAC = !OLL_PIN_CS_DAC_SELECTED;
     PIN_CS_ADC = !OLL_PIN_CS_ADC_SELECTED;
     PIN_CS_FPGA = !OLL_PIN_CS_FPGA_SELECTED;
@@ -501,19 +482,10 @@ void InitializeA37474(void) {
     // Config SPI1 for Gun Driver
     ConfigureSPI(ETM_SPI_PORT_1, A37474_SPI1CON_VALUE, 0, A37474_SPI1STAT_VALUE, SPI_CLK_1_MBIT, FCY_CLK);
 
-
     // ---------- Configure Timers ----------------- //
-    
+    //Initialize ETM Tick Module (Timer 2)
     ETMTickInitialize(FCY_CLK, ETM_TICK_USE_TIMER_2);
 
-    /*// Initialize TMR2
-    PR2 = A37474_PR2_VALUE;
-    TMR2 = 0;
-    _T2IF = 0;
-    //  _T2IP = 5;
-    _T2IP = 2;
-    T2CON = A37474_T2CON_VALUE;
-*/
     // Initialize TMR3
     PR3 = A37474_PR3_VALUE;
     TMR3 = 0;
@@ -522,32 +494,8 @@ void InitializeA37474(void) {
     _T3IP = 2;
     T3CON = A37474_T3CON_VALUE;
 
-
-    //Configure EEPROM
-    //ETMEEPromUseExternal();
+    //Configure EEPROM;
     ETMEEPromUseInternal();
-    //ETMEEPromConfigureExternalDevice(EEPROM_SIZE_8K_BYTES, FCY_CLK, 400000, EEPROM_I2C_ADDRESS_0, 1);
-
-    /*
-    U12_MCP23008.address = MCP23008_ADDRESS_0;
-    U12_MCP23008.i2c_port = I2C_PORT_1;
-    U12_MCP23008.pin_reset = 1; //_PIN_NOT_CONNECTED;
-    U12_MCP23008.pin_int_a = 1; //_PIN_NOT_CONNECTED;
-    U12_MCP23008.pin_int_b = 1; //_PIN_NOT_CONNECTED;
-    U12_MCP23008.output_latch_a_in_ram = 1; //MCP23008_U64_LATA_INITIAL;
-    U12_MCP23008.output_latch_b_in_ram = 1; //MCP23008_U64_LATB_INITIAL;
-
-
-    i2c_test |= MCP23008WriteSingleByte(&U12_MCP23008, MCP23008_REGISTER_IOCON, MCP23008_DEFAULT_IOCON);
-    i2c_test |= MCP23008WriteSingleByte(&U12_MCP23008, MCP23008_REGISTER_OLAT, CONFIG_SELECT_PIN_BYTE);
-    i2c_test |= MCP23008WriteSingleByte(&U12_MCP23008, MCP23008_REGISTER_IODIR, MCP23008_U12_IODIR_VALUE);
-    i2c_test |= MCP23008WriteSingleByte(&U12_MCP23008, MCP23008_REGISTER_IPOL, MCP23008_U12_IPOL_VALUE);
-
-    if ((i2c_test & 0xFF00) == 0xFA00) {
-        // There was a fault on the i2c bus, the MCP23017 did not initialize properly
-        _FAULT_MUX_CONFIG_FAILURE = 1;
-    }
-     */
 
     PIN_ILOCK_ON_SERIAL = !OLL_SERIAL_ENABLE;
     PIN_HV_ON_SERIAL = !OLL_SERIAL_ENABLE;
@@ -555,7 +503,6 @@ void InitializeA37474(void) {
 
     PIN_CPU_ILOCK_ENABLE = !OLL_ENABLE;
     PIN_CPU_PULSE_ENABLE = !OLL_ENABLE;
-
 
     // ------------- Configure Internal ADC --------- //
     ADCON1 = ADCON1_SETTING; // Configure the high speed ADC module based on H file parameters
@@ -571,10 +518,10 @@ void InitializeA37474(void) {
     _ADIE = 1;
     _ADON = 1;
 
-
 #ifdef __MODE_MODBUS_MONITOR
     ETMModbusInit();
 #endif
+
 
 #if 0  
     // Initialize TCPmodbus Module
@@ -591,8 +538,6 @@ void InitializeA37474(void) {
     //ip_config.remote_ip_addr = 0x0F46A8C0;  // 192.168.70.15
     //ip_config.ip_addr        = 0x6346A8C0;  // 192.168.70.99
 
-
-
     if ((ip_config.remote_ip_addr == 0xFFFFFFFF) || (ip_config.remote_ip_addr == 0x00000000)) {
         ip_config.remote_ip_addr = DEFAULT_REMOTE_IP_ADDRESS;
     }
@@ -600,7 +545,6 @@ void InitializeA37474(void) {
         ip_config.ip_addr = DEFAULT_IP_ADDRESS;
     }
 #else
-
     ip_config.ip_addr = ((unsigned long) modbus_slave_hold_reg_0x0D << 24) & 0xFF000000;
     ip_config.ip_addr += ((unsigned long) modbus_slave_hold_reg_0x0C << 16) & 0x00FF0000;
     ip_config.ip_addr += ((unsigned long) modbus_slave_hold_reg_0x0B << 8) & 0x0000FF00;
@@ -611,10 +555,8 @@ void InitializeA37474(void) {
     }
 
     ip_config.remote_ip_addr = DEFAULT_REMOTE_IP_ADDRESS;
-
 #endif
     TCPmodbus_init(&ip_config);
-
 
 
 #ifdef __CAN_ENABLED
@@ -624,7 +566,6 @@ void InitializeA37474(void) {
 #endif
 
     ADCConfigure();
-
 
 #ifdef __ETHERNET_REFERENCE
 
@@ -636,7 +577,6 @@ void InitializeA37474(void) {
 #endif
 
     // Initialize off board ADC Inputs
-
     ETMAnalogInputInitialize(&global_data_A37474.input_adc_temperature,
             MACRO_DEC_TO_SCALE_FACTOR_16(ADC_TEMPERATURE_SENSOR_FIXED_SCALE),
             ADC_TEMPERATURE_SENSOR_FIXED_OFFSET,
@@ -727,8 +667,6 @@ void InitializeA37474(void) {
 
 
     // ----------------- Initialize PIC's internal ADC Inputs --------------------- //
-
-
     ETMAnalogInputInitialize(&global_data_A37474.pos_5v_mon,
             MACRO_DEC_TO_SCALE_FACTOR_16(POS_5V_FIXED_SCALE),
             POS_5V_FIXED_OFFSET,
@@ -748,8 +686,6 @@ void InitializeA37474(void) {
 
 
     // ------------- Initialize Converter Logic Board DAC Outputs ------------------------------ //
-
-
     ETMAnalogOutputInitialize(&global_data_A37474.analog_output_high_voltage,
             MACRO_DEC_TO_SCALE_FACTOR_16(DAC_HIGH_VOLTAGE_FIXED_SCALE),
             DAC_HIGH_VOLTAGE_FIXED_OFFSET,
@@ -773,11 +709,8 @@ void InitializeA37474(void) {
             HEATER_VOLTAGE_MIN_SET_POINT,
             0);
 
-
     //Reset faults/warnings and inputs
     ResetAllFaultInfo();
-
-
 }
 
 void SetCustomIP(void) {
@@ -803,7 +736,6 @@ void SetCustomIP(void) {
 
 void DoStartupLEDs(void) {
     switch (((global_data_A37474.run_time_counter >> 4) & 0b11)) {
-
         case 0:
             PIN_LED_I2A = OLL_LED_ON;
             PIN_LED_I2B = !OLL_LED_ON;
@@ -835,60 +767,12 @@ void DoStartupLEDs(void) {
 }
 
 void ResetAllFaultInfo(void) {
-    //  _FAULT_FPGA_FIRMWARE_MAJOR_REV_MISMATCH = 0;
-    //  _FAULT_ADC_HV_V_MON_OVER_RELATIVE = 0;
-    //  _FAULT_ADC_HV_V_MON_UNDER_RELATIVE = 0;
-    //  _FAULT_ADC_HTR_V_MON_OVER_RELATIVE = 0;
-    //  _FAULT_ADC_HTR_V_MON_UNDER_RELATIVE = 0;
-    //  _FAULT_ADC_HTR_I_MON_OVER_ABSOLUTE = 0;
-    //  _FAULT_ADC_HTR_I_MON_UNDER_ABSOLUTE = 0;
-    //  _FAULT_ADC_TOP_V_MON_OVER_RELATIVE = 0;
-    //  _FAULT_ADC_TOP_V_MON_UNDER_RELATIVE = 0;
-    //  _FAULT_ADC_BIAS_V_MON_OVER_ABSOLUTE = 0;
-    //  _FAULT_ADC_BIAS_V_MON_UNDER_ABSOLUTE = 0;
-    //  _FAULT_ADC_DIGITAL_ARC = 0;
-    //  _FAULT_ADC_DIGITAL_OVER_TEMP = 0;
-    //  _FAULT_ADC_DIGITAL_GRID = 0;
-    //  _FAULT_CONVERTER_LOGIC_ADC_READ_FAILURE = 0;
-    //  _FAULT_HEATER_RAMP_TIMEOUT = 0;
-    //  _FAULT_HEATER_VOLTAGE_CURRENT_LIMITED = 0;
-    //  _FAULT_HEATER_STARTUP_FAILURE = 0;
-    //  
-    //  _STATUS_CUSTOMER_HV_ON = 0;
-    //  _STATUS_CUSTOMER_BEAM_ENABLE = 0;
-    //  _STATUS_ADC_DIGITAL_HEATER_NOT_READY = 0;
-    //  _STATUS_DAC_WRITE_FAILURE = 0;
-    //
-    //  _FPGA_CUSTOMER_HARDWARE_REV_MISMATCH         = 0;
-    //  _FPGA_FIRMWARE_MINOR_REV_MISMATCH              = 0;
-    //  _FPGA_ARC_COUNTER_GREATER_ZERO                 = 0;
-    //  _FPGA_ARC_HIGH_VOLTAGE_INHIBIT_ACTIVE          = 0;
-    ////  _FPGA_HEATER_VOLTAGE_LESS_THAN_4_5_VOLTS       = 0;
-    //  _FPGA_MODULE_TEMP_GREATER_THAN_65_C            = 0;
-    //  _FPGA_MODULE_TEMP_GREATER_THAN_75_C            = 0;
-    ////  _FPGA_PULSE_WIDTH_LIMITING                     = 0;
-    ////  _FPGA_PRF_FAULT                                = 0;
-    ////  _FPGA_CURRENT_MONITOR_PULSE_WIDTH_FAULT        = 0;
-    //  _FPGA_GRID_MODULE_HARDWARE_FAULT               = 0;
-    //  _FPGA_GRID_MODULE_OVER_VOLTAGE_FAULT           = 0;
-    //  _FPGA_GRID_MODULE_UNDER_VOLTAGE_FAULT          = 0;
-    //  _FPGA_GRID_MODULE_BIAS_VOLTAGE_FAULT           = 0;
-    //  _FPGA_HV_REGULATION_WARNING                    = 0;
-    //  _FPGA_DIPSWITCH_1_ON                           = 0;
-    //  _FPGA_TEST_MODE_TOGGLE_SWITCH_TEST_MODE        = 0;
-    //  _FPGA_LOCAL_MODE_TOGGLE_SWITCH_LOCAL_MODE      = 0;
-
-
     global_data_A37474._FAULT_REGISTER = 0;
     global_data_A37474._WARNING_REGISTER = 0;
-
-    //_FAULT_REGISTER = 0;
-    //_WARNING_REGISTER = 0;
 
     // Initialize Digital Input Filters for FPGA Status
     ETMDigitalInitializeInput(&global_data_A37474.fpga_coverter_logic_pcb_rev_mismatch, 0, 30);
     ETMDigitalInitializeInput(&global_data_A37474.fpga_firmware_major_rev_mismatch, 0, 30);
-    //  ETMDigitalInitializeInput(&global_data_A37474.fpga_firmware_minor_rev_mismatch           , 0, 30);   
     ETMDigitalInitializeInput(&global_data_A37474.fpga_arc, 0, 5);
     ETMDigitalInitializeInput(&global_data_A37474.fpga_arc_high_voltage_inihibit_active, 0, 0);
     ETMDigitalInitializeInput(&global_data_A37474.fpga_heater_voltage_less_than_4_5_volts, 0, 30);
@@ -914,9 +798,7 @@ void ResetAllFaultInfo(void) {
     ETMDigitalInitializeInput(&global_data_A37474.adc_digital_pulse_width_duty_flt, 1, 30);
     ETMDigitalInitializeInput(&global_data_A37474.adc_digital_grid_flt, 1, 30);
 
-
     ETMDigitalInitializeInput(&global_data_A37474.interlock_relay_closed, 0, 4);
-
 
     // Reset all the Analog input fault counters
     ETMAnalogInputClearFaultCounters(&global_data_A37474.input_adc_temperature);
@@ -1066,8 +948,6 @@ void DoA37474(void) {
     }
 #endif
 
-
-
     //--------- Following happens every 10ms ------------//  
     if (ETMTickRunOnceEveryNMilliseconds(10, &timer_write_holding_var_10ms)) {
 
@@ -1093,7 +973,6 @@ void DoA37474(void) {
 
         SetStateMessage(global_data_A37474.current_state_msg);
 
-
 #ifdef __CAN_CONTROLS
         if (global_data_A37474.control_state != STATE_FAULT_WARMUP_HEATER_OFF) {
             if (ETMCanSlaveGetSyncMsgResetEnable()) {
@@ -1108,7 +987,7 @@ void DoA37474(void) {
 
 
 #ifdef __ETHERNET_CONTROLS
-        //set Reset bit from ethernet function     
+        //set Reset bit from Ethernet function     
         if (global_data_A37474.control_state != STATE_FAULT_WARMUP_HEATER_OFF) {
             if (global_data_A37474.ethernet_reset_cmd) {
                 global_data_A37474.ethernet_reset_cmd = 0;
@@ -1159,14 +1038,12 @@ void DoA37474(void) {
         ModbusTimer++;
 #endif
 
-
         read_mux = MCP23008ReadSingleByte(&U12_MCP23008, MCP23008_REGISTER_GPIO);
         mux_port_byte = read_mux & 0x00FF;
         if (mux_port_byte != CONFIG_SELECT_PIN_BYTE) {
             read_mux |= MCP23008WriteSingleByte(&U12_MCP23008, MCP23008_REGISTER_OLAT, CONFIG_SELECT_PIN_BYTE);
             global_data_A37474.mux_fault++;
         }
-
 
         // Update to counter used to flash the LEDs at startup and time transmits to DACs
         if (global_data_A37474.power_supply_startup_remaining) {
@@ -1185,8 +1062,6 @@ void DoA37474(void) {
             global_data_A37474.fault_restart_remaining--;
         }
 
-
-
         //    global_data_A37474.watchdog_counter++;
         global_data_A37474.run_time_counter++;
 
@@ -1204,7 +1079,6 @@ void DoA37474(void) {
 
         // Start the next acquisition from the external ADC
         ADCStartAcquisition();
-
 
         if (global_data_A37474.watchdog_set_mode == WATCHDOG_MODE_0) {
             if ((ETMAnalogInputGetReading(&global_data_A37474.input_dac_monitor) > MIN_WD_VALUE_0) &&
@@ -1234,65 +1108,6 @@ void DoA37474(void) {
             global_data_A37474.watchdog_set_mode = WATCHDOG_MODE_0;
         }
 
-        //    if ((global_data_A37474.previous_0x0A_val != modbus_slave_hold_reg_0x0A) ||
-        //        (global_data_A37474.previous_0x0B_val != modbus_slave_hold_reg_0x0B) ||
-        //        (global_data_A37474.previous_0x0C_val != modbus_slave_hold_reg_0x0C) ||
-        //        (global_data_A37474.previous_0x0D_val != modbus_slave_hold_reg_0x0D)) {
-        //      SetCustomIP();
-        //    }
-        //    
-        //    global_data_A37474.previous_0x0A_val = modbus_slave_hold_reg_0x0A;
-        //    global_data_A37474.previous_0x0B_val = modbus_slave_hold_reg_0x0B;
-        //    global_data_A37474.previous_0x0C_val = modbus_slave_hold_reg_0x0C;
-        //    global_data_A37474.previous_0x0D_val = modbus_slave_hold_reg_0x0D;
-
-        //    if (dac_resets_debug < global_data_A37474.watchdog_counter) {
-        //      dac_resets_debug++;
-        //    }
-        //
-        //    if (global_data_A37474.reset_debug) {
-        //      dac_resets_debug = 0;  
-        //    }
-
-        //    if (global_data_A37474.watchdog_counter >= 3) {
-        //      global_data_A37474.watchdog_counter = 0;
-        //      if (global_data_A37474.dac_digital_watchdog_oscillator < ((WATCHDOG_HIGH >> 1) + (WATCHDOG_LOW >> 1))) {
-        //	global_data_A37474.dac_digital_watchdog_oscillator = WATCHDOG_HIGH;
-        //      } else {
-        //	global_data_A37474.dac_digital_watchdog_oscillator = WATCHDOG_LOW;
-        //      }
-        //    }
-        //    DACWriteChannel(LTC265X_WRITE_AND_UPDATE_DAC_H, global_data_A37474.dac_digital_watchdog_oscillator);
-
-        /*
-                ETMCanSlaveSetDebugRegister(0xA, global_data_A37474.pos_5v_mon.reading_scaled_and_calibrated);
-                ETMCanSlaveSetDebugRegister(0xB, global_data_A37474.pos_15v_mon.reading_scaled_and_calibrated);
-                ETMCanSlaveSetDebugRegister(0xC, global_data_A37474.neg_15v_mon.reading_scaled_and_calibrated);
-                //    ETMCanSlaveSetDebugRegister(0xA, global_data_A37474.run_time_counter);
-                //    ETMCanSlaveSetDebugRegister(0xB, global_data_A37474.fault_restart_remaining);
-                //    ETMCanSlaveSetDebugRegister(0xC, global_data_A37474.power_supply_startup_remaining);
-                ETMCanSlaveSetDebugRegister(0xD, global_data_A37474.heater_warm_up_time_remaining);
-                ETMCanSlaveSetDebugRegister(0xE, global_data_A37474.heater_ramp_up_time);
-                ETMCanSlaveSetDebugRegister(0xF, global_data_A37474.control_state);
-         */
-        /*
-                slave_board_data.log_data[0] = ETMAnalogInputGetReading(&global_data_A37474.input_gun_i_peak);
-                slave_board_data.log_data[1] = ETMAnalogInputGetReading(&global_data_A37474.input_hv_v_mon);
-                slave_board_data.log_data[2] = ETMAnalogInputGetReading(&global_data_A37474.input_top_v_mon); //gdoc says low energy
-                slave_board_data.log_data[3] = ETMAnalogInputGetReading(&global_data_A37474.input_top_v_mon); //gdoc says high energy
-                slave_board_data.log_data[4] = ETMAnalogInputGetReading(&global_data_A37474.input_temperature_mon);
-                slave_board_data.log_data[5] = global_data_A37474.heater_warm_up_time_remaining;
-                slave_board_data.log_data[6] = ETMAnalogInputGetReading(&global_data_A37474.input_htr_i_mon);
-                slave_board_data.log_data[7] = ETMAnalogInputGetReading(&global_data_A37474.input_htr_v_mon);
-                slave_board_data.log_data[8] = ETMAnalogOutputGetSetPoint(&global_data_A37474.analog_output_high_voltage);
-                slave_board_data.log_data[9] = global_data_A37474.heater_voltage_target;
-                slave_board_data.log_data[10] = ETMAnalogOutputGetSetPoint(&global_data_A37474.analog_output_top_voltage); //gdoc says low energy
-                slave_board_data.log_data[11] = ETMAnalogOutputGetSetPoint(&global_data_A37474.analog_output_top_voltage); //gdoc says high energy
-                slave_board_data.log_data[12] = ETMAnalogInputGetReading(&global_data_A37474.input_bias_v_mon);
-                slave_board_data.log_data[13] = global_data_A37474.control_state;
-                slave_board_data.log_data[14] = global_data_A37474.adc_read_error_count;
-                slave_board_data.log_data[15] = 0; //GUN_DRIVER_LOAD_TYPE;
-         */
 
         if (global_data_A37474.control_state == STATE_HEATER_RAMP_UP) {
             timer_report = (global_data_A37474.heater_ramp_up_time + HEATER_WARM_UP_TIME) / 100;
@@ -1315,11 +1130,7 @@ void DoA37474(void) {
         modbus_slave_hold_reg_0x31 = global_data_A37474.state_message;
         modbus_slave_hold_reg_0x32 = global_data_A37474._FAULT_REGISTER;
         modbus_slave_hold_reg_0x33 = global_data_A37474._WARNING_REGISTER;
-
 #endif
-
-        // ETMCanSlaveSetDebugRegister(7, global_data_A37474.dac_write_failure_count);
-
 
 #ifdef __CAN_REFERENCE
         ETMAnalogSetOutput(&global_data_A37474.analog_output_high_voltage, global_data_A37474.can_high_voltage_set_point);
@@ -1328,7 +1139,6 @@ void DoA37474(void) {
         //global_data_A37474.analog_output_high_voltage.set_point = global_data_A37474.can_high_voltage_set_point;
         //global_data_A37474.analog_output_top_voltage.set_point  = global_data_A37474.can_pulse_top_set_point;
 #endif
-
 
 #ifdef __MODBUS_REFERENCE   
         ETMAnalogSetOutput(&global_data_A37474.analog_output_high_voltage, modbus_slave_hold_reg_0x13);
@@ -1346,20 +1156,25 @@ void DoA37474(void) {
         if (modbus_slave_hold_reg_0x11 > MAX_PROGRAM_HTR_VOLTAGE) {
             modbus_slave_invalid_data = 1;
         }
-
 #endif
 
 #ifdef __ETHERNET_REFERENCE
-
         ETMAnalogOutputSetPoint(&global_data_A37474.analog_output_high_voltage, global_data_A37474.ethernet_hv_ref);
+        ETMAnalogInputInitializeRelativeTripLevels(&global_data_A37474.input_hv_v_mon,
+                global_data_A37474.ethernet_hv_ref,
+                ADC_HV_VMON_RELATIVE_TRIP_SCALE,
+                ADC_HV_VMON_RELATIVE_TRIP_FLOOR,
+                ADC_HV_VMON_RELATIVE_TRIP_COUNT);
+
         ETMAnalogOutputSetPoint(&global_data_A37474.analog_output_top_voltage, global_data_A37474.ethernet_top_ref);
+        ETMAnalogInputInitializeRelativeTripLevels(&global_data_A37474.input_top_v_mon,
+                global_data_A37474.ethernet_top_ref,
+                ADC_TOP_V_MON_RELATIVE_TRIP_SCALE,
+                ADC_TOP_V_MON_RELATIVE_TRIP_FLOOR,
+                ADC_TOP_V_MON_RELATIVE_TRIP_TIME);
+
         global_data_A37474.heater_voltage_target = global_data_A37474.ethernet_htr_ref;
-
-
 #endif
-
-
-
 
         if (global_data_A37474.heater_voltage_target > MAX_PROGRAM_HTR_VOLTAGE) {
             global_data_A37474.heater_voltage_target = MAX_PROGRAM_HTR_VOLTAGE;
@@ -1377,6 +1192,11 @@ void DoA37474(void) {
                 if (ETMAnalogInputGetReading(&global_data_A37474.input_htr_i_mon) < MAX_HEATER_CURRENT_DURING_RAMP_UP) {
                     global_data_A37474.heater_set_point += HEATER_RAMP_UP_INCREMENT;
                     ETMAnalogOutputSetPoint(&global_data_A37474.analog_output_heater_voltage, global_data_A37474.heater_set_point);
+                    ETMAnalogInputInitializeRelativeTripLevels(&global_data_A37474.input_htr_v_mon,
+                            global_data_A37474.heater_set_point,
+                            ADC_HTR_V_MON_RELATIVE_TRIP_SCALE,
+                            ADC_HTR_V_MON_RELATIVE_TRIP_FLOOR,
+                            ADC_HTR_V_MON_RELATIVE_TRIP_COUNT);
                 }
             }
 
@@ -1387,6 +1207,11 @@ void DoA37474(void) {
                 if (ETMAnalogInputGetReading(&global_data_A37474.input_htr_i_mon) < MAX_HEATER_CURRENT_DURING_RAMP_UP) {
                     global_data_A37474.heater_set_point += HEATER_REGULATION_INCREMENT;
                     ETMAnalogOutputSetPoint(&global_data_A37474.analog_output_heater_voltage, global_data_A37474.heater_set_point);
+                    ETMAnalogInputInitializeRelativeTripLevels(&global_data_A37474.input_htr_v_mon,
+                            global_data_A37474.heater_set_point,
+                            ADC_HTR_V_MON_RELATIVE_TRIP_SCALE,
+                            ADC_HTR_V_MON_RELATIVE_TRIP_FLOOR,
+                            ADC_HTR_V_MON_RELATIVE_TRIP_COUNT);
                     if (global_data_A37474.heater_voltage_current_limited) {
                         global_data_A37474.heater_voltage_current_limited--;
                     }
@@ -1401,13 +1226,12 @@ void DoA37474(void) {
 
         if (ETMAnalogOutputGetSetPoint(&global_data_A37474.analog_output_heater_voltage) > global_data_A37474.heater_voltage_target) {
             ETMAnalogOutputSetPoint(&global_data_A37474.analog_output_heater_voltage, global_data_A37474.heater_voltage_target);
+            ETMAnalogInputInitializeRelativeTripLevels(&global_data_A37474.input_htr_v_mon,
+                    global_data_A37474.heater_voltage_target,
+                    ADC_HTR_V_MON_RELATIVE_TRIP_SCALE,
+                    ADC_HTR_V_MON_RELATIVE_TRIP_FLOOR,
+                    ADC_HTR_V_MON_RELATIVE_TRIP_COUNT);
         }
-
-        // update the DAC programs based on the new set points.
-        //ETMAnalogOutputGetDACValue(&global_data_A37474.analog_output_high_voltage);
-        //ETMAnalogOutputGetDACValue(&global_data_A37474.analog_output_top_voltage);
-        //ETMAnalogOutputGetDACValue(&global_data_A37474.analog_output_heater_voltage);
-
 
         // Send out Data to local DAC and offboard.  Each channel will be updated once every 40mS
         // Do not send out while in state "STATE_WAIT_FOR_CONFIG" because the module is not ready to receive data and
@@ -1417,45 +1241,31 @@ void DoA37474(void) {
 
                 case 0:
                     DACWriteChannel(LTC265X_WRITE_AND_UPDATE_DAC_A, ETMAnalogOutputGetDACValue(&global_data_A37474.analog_output_high_voltage));
-                    //ETMCanSlaveSetDebugRegister(0, ETMAnalogOutputGetDACValue(&global_data_A37474.analog_output_high_voltage));
                     break;
-
 
                 case 1:
                     DACWriteChannel(LTC265X_WRITE_AND_UPDATE_DAC_B, ETMAnalogOutputGetDACValue(&global_data_A37474.analog_output_top_voltage));
-                    //ETMCanSlaveSetDebugRegister(1, ETMAnalogOutputGetDACValue(&global_data_A37474.analog_output_top_voltage));
                     break;
-
 
                 case 2:
                     DACWriteChannel(LTC265X_WRITE_AND_UPDATE_DAC_C, ETMAnalogOutputGetDACValue(&global_data_A37474.analog_output_heater_voltage));
-                    //ETMCanSlaveSetDebugRegister(2, ETMAnalogOutputGetDACValue(&global_data_A37474.analog_output_heater_voltage));
                     break;
-
 
                 case 3:
                     DACWriteChannel(LTC265X_WRITE_AND_UPDATE_DAC_D, global_data_A37474.dac_digital_hv_enable);
-                    //ETMCanSlaveSetDebugRegister(3, global_data_A37474.dac_digital_hv_enable);
                     break;
-
 
                 case 4:
                     DACWriteChannel(LTC265X_WRITE_AND_UPDATE_DAC_E, global_data_A37474.dac_digital_heater_enable);
-                    //ETMCanSlaveSetDebugRegister(4, global_data_A37474.dac_digital_heater_enable);
                     break;
-
 
                 case 5:
                     DACWriteChannel(LTC265X_WRITE_AND_UPDATE_DAC_F, global_data_A37474.dac_digital_top_enable);
-                    //ETMCanSlaveSetDebugRegister(5, global_data_A37474.dac_digital_top_enable);
                     break;
-
 
                 case 6:
                     DACWriteChannel(LTC265X_WRITE_AND_UPDATE_DAC_G, global_data_A37474.dac_digital_trigger_enable);
-                    //ETMCanSlaveSetDebugRegister(6, global_data_A37474.dac_digital_trigger_enable);
                     break;
-
 
                 case 7:
                     if (global_data_A37474.watchdog_state_change == 0) {
@@ -1476,36 +1286,6 @@ void DoA37474(void) {
 }
 
 void UpdateFaults(void) {
-
-    // DPARKER ------------ FAULT TESTING
-    /*
-    if (_SYNC_CONTROL_RESET_ENABLE) {
-      global_data_A37474.fpga_firmware_major_rev_mismatch.filtered_reading = 1;
-    }
-  
-    if (_SYNC_CONTROL_HIGH_SPEED_LOGGING) {
-      global_data_A37474.input_top_v_mon.reading_scaled_and_calibrated = 40000;
-    }
-  
-    if (_SYNC_CONTROL_PULSE_SYNC_DISABLE_HV) {
-      global_data_A37474.input_top_v_mon.reading_scaled_and_calibrated = 4000;
-    }
-  
-    if (_SYNC_CONTROL_PULSE_SYNC_DISABLE_XRAY) {
-      global_data_A37474.input_bias_v_mon.reading_scaled_and_calibrated = 22000;
-    }
-     */
-    // END FAULT TESTING
-
-    //  if ((global_data_A37474.control_state == STATE_FAULT_HEATER_FAILURE) ||
-    //      (global_data_A37474.control_state == STATE_FAULT_WARMUP_HEATER_OFF) ||
-    //      (global_data_A37474.control_state == STATE_FAULT_HEATER_OFF) ||
-    //      (global_data_A37474.control_state == STATE_FAULT_HEATER_ON) ||
-    //      (global_data_A37474.control_state == STATE_WAIT_FOR_CONFIG)) {
-    //    // Do not evalute any more fault conditions
-    //    return;
-    //  }
-
     if (global_data_A37474.control_state < STATE_HEATER_RAMP_UP) {
         // Do not evalute any more fault conditions
         return;
@@ -1520,19 +1300,17 @@ void UpdateFaults(void) {
         _FAULT_MUX_CONFIG_FAILURE = 1;
     }
 
-
     if (global_data_A37474.heater_voltage_current_limited >= HEATER_VOLTAGE_CURRENT_LIMITED_FAULT_TIME) {
         _FAULT_HEATER_VOLTAGE_CURRENT_LIMITED = 1;
     } else if (global_data_A37474.reset_active) {
         _FAULT_HEATER_VOLTAGE_CURRENT_LIMITED = 0;
     }
 
-    // Evaluate the readings from the Coverter Logic Board ADC
+    // Evaluate the readings from the Converter Logic Board ADC
     if (global_data_A37474.adc_read_ok) {
         // There was a valid read of the data from the converter logic board
 
-        // ------------------- Evaluate the digital readings from the Coverter Logic Board ADC ---------------------//  
-
+        // ------------------- Evaluate the digital readings from the Converter Logic Board ADC ---------------------//  
         if (global_data_A37474.adc_digital_warmup_flt.filtered_reading == 0) {
             _STATUS_ADC_DIGITAL_HEATER_NOT_READY = 1;
         } else {
@@ -1551,10 +1329,6 @@ void UpdateFaults(void) {
             _FAULT_ADC_DIGITAL_OVER_TEMP = 0;
         }
 
-        //    if (global_data_A37474.adc_digital_pulse_width_duty_flt.filtered_reading == 0) {
-        //      _FAULT_ADC_DIGITAL_PULSE_WIDTH_DUTY = 1;
-        //    }
-
         if (global_data_A37474.adc_digital_grid_flt.filtered_reading == 0) {
             _FAULT_ADC_DIGITAL_GRID = 1;
         } else if (global_data_A37474.reset_active) {
@@ -1562,23 +1336,11 @@ void UpdateFaults(void) {
         }
 
         // ------------------- Evaluate the analog readings from the Coverter Logic Board ADC ---------------------//
-        //global_data_A37474.input_htr_v_mon.target_value = global_data_A37474.analog_output_heater_voltage.set_point;
-        //global_data_A37474.input_hv_v_mon.target_value = global_data_A37474.analog_output_high_voltage.set_point;
-        //global_data_A37474.input_top_v_mon.target_value = global_data_A37474.analog_output_top_voltage.set_point;
 
         // If the set point is less that 1.5 V clear the under current counter
         if (ETMAnalogOutputGetSetPoint(&global_data_A37474.analog_output_heater_voltage) < 1500) {
             ETMAnalogInputClearFaultCounters(&global_data_A37474.input_htr_v_mon);
         }
-
-
-        // If the high voltage is not on, clear the high voltage, top, and bias error counters
-        //    if (global_data_A37474.control_state < STATE_HV_ON) {
-        //      ETMAnalogClearFaultCounters(&global_data_A37474.input_hv_v_mon);
-        //      ETMAnalogClearFaultCounters(&global_data_A37474.input_top_v_mon);
-        //      ETMAnalogClearFaultCounters(&global_data_A37474.input_bias_v_mon);
-        //    }
-
 
         if (ETMAnalogInputFaultOverFixed(&global_data_A37474.input_htr_i_mon)) {
             _FAULT_ADC_HTR_I_MON_OVER_ABSOLUTE = 1;
@@ -1623,8 +1385,7 @@ void UpdateFaults(void) {
             _STATUS_INTERLOCK_INHIBITING_HV = 0;
         }
 
-
-        // Only check for HV undervoltage after HV is enabled
+        // Only check for HV under-voltage after HV is enabled
         if (global_data_A37474.control_state >= STATE_HV_ON) {
             if (ETMAnalogInputFaultUnderRelative(&global_data_A37474.input_hv_v_mon)) {
                 _FAULT_ADC_HV_V_MON_UNDER_RELATIVE = 1;
@@ -1642,7 +1403,7 @@ void UpdateFaults(void) {
             _FAULT_ADC_TOP_V_MON_OVER_RELATIVE = 0;
         }
 
-        // Only check for top supply undervoltage after top is enabled
+        // Only check for top supply under-voltage after top is enabled
         if (global_data_A37474.control_state >= STATE_TOP_READY) {
             if (ETMAnalogInputFaultUnderRelative(&global_data_A37474.input_top_v_mon)) {
                 _FAULT_ADC_TOP_V_MON_UNDER_RELATIVE = 1;
@@ -1721,7 +1482,6 @@ void UpdateLEDandStatusOutuputs(void) {
     }
 
     // System OK Status
-    //  if (global_data_A37474.control_state <= STATE_FAULT_HEATER_ON) {
     if (CheckFault() != 0 || CheckHeaterFault() != 0) {
         PIN_LED_SYSTEM_OK = !OLL_LED_ON;
     } else {
@@ -1742,15 +1502,14 @@ void SetStateMessage(unsigned int message) {
     } else {
         message &= ~0x0040;
     }
-    /*
-    if (_WARNING_REGISTER) {
+
+    if (global_data_A37474._WARNING_REGISTER) {
         message |= 0x0200;
     } else {
         message &= ~0x0200;
-    }*/
+    }
 
     global_data_A37474.state_message = message;
-
 }
 
 unsigned int GetModbusResetEnable(void) {
@@ -1769,7 +1528,6 @@ void EnableHeater(void) {
      */
     ETMAnalogOutputEnable(&global_data_A37474.analog_output_heater_voltage);
     global_data_A37474.dac_digital_heater_enable = DAC_DIGITAL_ON;
-    //DACWriteChannel(LTC265X_WRITE_AND_UPDATE_DAC_E, global_data_A37474.dac_digital_heater_enable);
 }
 
 void DisableHeater(void) {
@@ -1799,7 +1557,6 @@ void EnableTopSupply(void) {
        Set the grid top reference
        Set the grid top enable control voltage
      */
-
     ETMAnalogOutputEnable(&global_data_A37474.analog_output_top_voltage);
     global_data_A37474.dac_digital_top_enable = DAC_DIGITAL_ON;
 }
@@ -2042,10 +1799,7 @@ void DACWriteChannel(unsigned int command_word, unsigned int data_word) {
         PIN_CS_DAC = !OLL_PIN_CS_DAC_SELECTED;
         __delay32(DELAY_FPGA_CABLE_DELAY);
 
-
-
         // ------------- Confirm the data was written correctly ------------------- //
-
         PIN_CS_DAC = OLL_PIN_CS_DAC_SELECTED;
         __delay32(DELAY_FPGA_CABLE_DELAY);
 
@@ -2110,7 +1864,6 @@ void FPGAReadData(void) {
     /*
       Reads 32 bits from the FPGA
      */
-
     PIN_CS_ADC = !OLL_PIN_CS_ADC_SELECTED;
     PIN_CS_DAC = !OLL_PIN_CS_DAC_SELECTED;
     PIN_CS_FPGA = OLL_PIN_CS_FPGA_SELECTED;
@@ -2141,31 +1894,6 @@ void FPGAReadData(void) {
     // Only check the rest of the data bits if the Major Rev Matches
     if (fpga_bits.fpga_firmware_rev == TARGET_FPGA_FIRMWARE_REV) {
 
-        // Check the logic board pcb rev (NOT LATCHED)
-        //    if (fpga_bits.customer_hardware_rev != TARGET_CUSTOMER_HARDWARE_REV) {
-        //      ETMDigitalUpdateInput(&global_data_A37474.fpga_coverter_logic_pcb_rev_mismatch, 1);   
-        //    } else {
-        //      ETMDigitalUpdateInput(&global_data_A37474.fpga_coverter_logic_pcb_rev_mismatch, 0);
-        //    }
-        //    if (global_data_A37474.fpga_coverter_logic_pcb_rev_mismatch.filtered_reading) {
-        //      _FPGA_CUSTOMER_HARDWARE_REV_MISMATCH = 1;
-        //    } else {
-        //      _FPGA_CUSTOMER_HARDWARE_REV_MISMATCH = 0;
-        //    }
-
-        // Check the firmware minor rev (NOT LATCHED)
-        //////    if (fpga_bits.fpga_firmware_minor_rev != TARGET_FPGA_FIRMWARE_MINOR_REV) {
-        //////      ETMDigitalUpdateInput(&global_data_A37474.fpga_firmware_minor_rev_mismatch, 1);   
-        //////    } else {
-        //////      ETMDigitalUpdateInput(&global_data_A37474.fpga_firmware_minor_rev_mismatch, 0);
-        //////    }
-        //////    if (global_data_A37474.fpga_firmware_minor_rev_mismatch.filtered_reading) {
-        //////      _FPGA_FIRMWARE_MINOR_REV_MISMATCH = 1;
-        //////    } else {
-        //////      _FPGA_FIRMWARE_MINOR_REV_MISMATCH = 0;
-        //////    }
-        //////    
-        // Check the Arc Count (NOT LATCHED)
         ETMDigitalUpdateInput(&global_data_A37474.fpga_arc, fpga_bits.arc);
         if (global_data_A37474.fpga_arc.filtered_reading) {
             _FPGA_ARC_COUNTER_GREATER_ZERO = 1;
@@ -2180,22 +1908,6 @@ void FPGAReadData(void) {
         } else {
             _FPGA_ARC_HIGH_VOLTAGE_INHIBIT_ACTIVE = 0;
         }
-
-        // Check the heater voltage less than 4.5 Volts (NOT LATCHED)
-        //    ETMDigitalUpdateInput(&global_data_A37474.fpga_heater_voltage_less_than_4_5_volts, fpga_bits.heater_voltage_less_than_4_5_volts);
-        //    if (global_data_A37474.fpga_heater_voltage_less_than_4_5_volts.filtered_reading) {
-        //      _FPGA_HEATER_VOLTAGE_LESS_THAN_4_5_VOLTS = 1;
-        //    } else {
-        //      _FPGA_HEATER_VOLTAGE_LESS_THAN_4_5_VOLTS = 0;
-        //    }
-
-        // Check module temp greater than 65 C (NOT LATCHED)
-        //    ETMDigitalUpdateInput(&global_data_A37474.fpga_module_temp_greater_than_65_C, fpga_bits.module_temp_greater_than_65_C);
-        //    if (global_data_A37474.fpga_module_temp_greater_than_65_C.filtered_reading) {
-        //      _FPGA_MODULE_TEMP_GREATER_THAN_65_C = 1;
-        //    } else {
-        //      _FPGA_MODULE_TEMP_GREATER_THAN_65_C = 0;
-        //    }
 
         // Check module temp greater than 75 C (NOT LATCHED)
         ETMDigitalUpdateInput(&global_data_A37474.fpga_module_temp_greater_than_75_C, fpga_bits.module_temp_greater_than_75_C);
@@ -2375,7 +2087,7 @@ void __attribute__((interrupt, no_auto_psv)) _ADCInterrupt(void) {
         global_data_A37474.pos15v_adc_accumulator >>= 3;
         global_data_A37474.neg15v_adc_accumulator >>= 3;
 
-        // Store the filtred results
+        // Store the filtered results
         ETMAnalogInputUpdate(&global_data_A37474.pos_5v_mon, ((unsigned int) global_data_A37474.pos5v_adc_accumulator));
         ETMAnalogInputUpdate(&global_data_A37474.pos_15v_mon, ((unsigned int) global_data_A37474.pos15v_adc_accumulator));
         ETMAnalogInputUpdate(&global_data_A37474.neg_15v_mon, ((unsigned int) global_data_A37474.neg15v_adc_accumulator));
@@ -2387,69 +2099,6 @@ void __attribute__((interrupt, no_auto_psv)) _ADCInterrupt(void) {
     }
 }
 
-
-//void ETMAnalogClearFaultCounters(AnalogInput* ptr_analog_input) {
-//  ptr_analog_input->absolute_under_counter = 0;
-//  ptr_analog_input->absolute_over_counter = 0;
-//  ptr_analog_input->over_trip_counter = 0;
-//  ptr_analog_input->under_trip_counter = 0;
-//}
-
-
-//void ETMCanSpoofPulseSyncNextPulseLevel(void) {
-//  ETMCanMessage message;
-//  message.identifier = ETM_CAN_MSG_LVL_TX | (ETM_CAN_ADDR_PULSE_SYNC_BOARD << 3); 
-//  message.word0      = next_pulse_count;
-//  message.word1    = 0xFFFF;
-//  ETMCanTXMessage(&message, &C2TX2CON);
-//}
-//
-
-//void ETMCanSpoofAFCHighSpeedDataLog(void) {
-//  unsigned int packet_id;
-//
-//  // Spoof HV Lambda Packet 0x4C
-//  ETMCanMessage log_message;
-//  
-//  packet_id = 0x004C;
-//  packet_id <<= 1;
-//  packet_id |= 0b0000011000000000;
-//  packet_id <<= 2;
-//  
-//  log_message.identifier = packet_id;
-//  log_message.identifier &= 0xFF00;
-//  log_message.identifier <<= 3;
-//  log_message.identifier |= (packet_id & 0x00FF);
-//  
-//  log_message.word3 = next_pulse_count-1;
-//  log_message.word2 = global_data_A37474.heater_voltage_target;
-//  log_message.word1 = global_data_A37474.analog_output_heater_voltage.set_point;
-//  log_message.word0 = global_data_A37474.pot_htr.reading_scaled_and_calibrated;
-//  
-//  ETMCanAddMessageToBuffer(&etm_can_tx_message_buffer, &log_message);
-//  MacroETMCanCheckTXBuffer();
-//
-//  // Spoof Pulse Sync Packet 0x3C
-//  
-//  packet_id = 0x003C;
-//  packet_id <<= 1;
-//  packet_id |= 0b0000011000000000;
-//  packet_id <<= 2;
-//  
-//  log_message.identifier = packet_id;
-//  log_message.identifier &= 0xFF00;
-//  log_message.identifier <<= 3;
-//  log_message.identifier |= (packet_id & 0x00FF);
-//  
-//  log_message.word3 = next_pulse_count-1;//local_debug_data.debug_4;
-//  log_message.word2 = global_data_A37474.control_state;
-//  log_message.word1 = global_data_A37474.input_htr_v_mon.reading_scaled_and_calibrated;
-//  log_message.word0 = global_data_A37474.input_htr_i_mon.reading_scaled_and_calibrated;
-//  
-//  ETMCanAddMessageToBuffer(&etm_can_tx_message_buffer, &log_message);
-//  MacroETMCanCheckTXBuffer();
-//
-//}
 
 /*
 void ETMCanSlaveExecuteCMDBoardSpecific(ETMCanMessage* message_ptr) {
@@ -2566,8 +2215,8 @@ void ETMModbusInit(void) {
             ModbusSlaveHoldingRegister[j] = global_data_A37474.page_data4[0 + i];
         }
     }
-    for (i = 0; i < 9; i++) {//56-69
-        for (j = 56; j < 65; j++) {
+    for (i = 0; i < 8; i++) {//56-69
+        for (j = 56; j < 64; j++) {
             ModbusSlaveHoldingRegister[j] = global_data_A37474.page_data5[0 + i];
         }
     }
@@ -2592,8 +2241,8 @@ void ETMModbusInit(void) {
             ModbusSlaveBit[j] = global_data_A37474.page_data9[0 + i];
         }
     }
-    for (i = 0; i < 9; i++) {//56-69
-        for (j = 56; j < 65; j++) {
+    for (i = 0; i < 8; i++) {//56-69
+        for (j = 56; j < 64; j++) {
             ModbusSlaveBit[j] = global_data_A37474.page_data10[0 + i];
         }
     }
@@ -2604,9 +2253,6 @@ void ETMModbusInit(void) {
     modbus_slave_bit_0x02 = 0;
     modbus_slave_bit_0x03 = 0;
     modbus_slave_bit_0x04 = 0;
-    //  modbus_slave_bit_0x05 = 0;
-    //  modbus_slave_bit_0x06 = 0;
-    //  modbus_slave_bit_0x07 = 0;
 
     U1MODEbits.UARTEN = 1; // And turn the peripheral on
 
@@ -2856,7 +2502,7 @@ void ProcessCommand(MODBUS_MESSAGE * ptr) {
                     global_data_A37474.page_data9[coil_index - 42] = ptr->write_value;
                     ETMEEPromWritePage(9, global_data_A37474.page_data9);
                 }
-                if ((coil_index >= 56) && (coil_index < 65)) {
+                if ((coil_index >= 56) && (coil_index < 64)) {
                     global_data_A37474.page_data10[coil_index - 56] = ptr->write_value;
                     ETMEEPromWritePage(10, global_data_A37474.page_data10);
                 }
@@ -2896,7 +2542,7 @@ void ProcessCommand(MODBUS_MESSAGE * ptr) {
                         global_data_A37474.page_data4[coil_index - 42] = ptr->write_value;
                         ETMEEPromWritePage(4, global_data_A37474.page_data4);
                     }
-                    if ((coil_index >= 56) && (coil_index < 65)) {
+                    if ((coil_index >= 56) && (coil_index < 64)) {
                         global_data_A37474.page_data5[coil_index - 56] = ptr->write_value;
                         ETMEEPromWritePage(5, global_data_A37474.page_data5);
                     }
@@ -2922,7 +2568,7 @@ void ProcessCommand(MODBUS_MESSAGE * ptr) {
                     global_data_A37474.page_data4[coil_index - 42] = ptr->write_value;
                     ETMEEPromWritePage(4, global_data_A37474.page_data4);
                 }
-                if ((coil_index >= 56) && (coil_index < 65)) {
+                if ((coil_index >= 56) && (coil_index < 64)) {
                     global_data_A37474.page_data5[coil_index - 56] = ptr->write_value;
                     ETMEEPromWritePage(5, global_data_A37474.page_data5);
                 }

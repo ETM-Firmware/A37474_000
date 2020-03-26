@@ -105,8 +105,6 @@
 #define A37474_TRISD_VALUE 0b0001110100010000 
 #define A37474_TRISF_VALUE 0b0000000111001111 
 #define A37474_TRISG_VALUE 0b1100000111001111 
-
-
 /*
    F E D C B A 9 8 7 6 5 4 3 2 1 0
 
@@ -121,8 +119,9 @@ D  0 0 0 1 0 1 0 1 0 0 0 1 0 0 0 0
 E  0 0 0 0 0 0 0 1 1 1 0 0 1 1 1 1 
 
 F  1 1 0 0 0 0 0 1 1 1 0 0 1 1 1 1 
-
  */
+
+
 /*
   This sets up the ADC to work as following
   AUTO Sampeling
@@ -133,7 +132,6 @@ F  1 1 0 0 0 0 0 1 1 1 0 0 1 1 1 1
   Scan Through Selected Inputs (8 selected at any point in time)
 
  */
-
 #define ADCON1_SETTING          (ADC_MODULE_OFF & ADC_IDLE_STOP & ADC_FORMAT_INTG & ADC_CLK_AUTO & ADC_AUTO_SAMPLING_ON)
 #define ADCON2_SETTING          (ADC_VREF_AVDD_EXT & ADC_SCAN_ON & ADC_SAMPLES_PER_INT_8 & ADC_ALT_BUF_ON & ADC_ALT_INPUT_OFF)
 #define ADCON3_SETTING          (ADC_SAMPLE_TIME_4 & ADC_CONV_CLK_SYSTEM & ADC_CONV_CLK_9Tcy2)
@@ -171,35 +169,23 @@ F  1 1 0 0 0 0 0 1 1 1 0 0 1 1 1 1
 #define OLL_CS_PINS_SELECTED                         0xE0
 
 
-
 // Digital Outputs
-
 #define PIN_ILOCK_ON_SERIAL                          _LATD3
 #define PIN_HV_ON_SERIAL                             _LATD2
 #define PIN_BEAM_ENABLE_SERIAL                       _LATD1
 #define OLL_SERIAL_ENABLE                            1
-
 #define PIN_CPU_15V_SUPPLY_ENABLE                    _LATD10  //set as input for high impedance to enable
-
 #define OLL_ENABLE                                   1
-
 #define PIN_CPU_ILOCK_ENABLE                         _LATD5
 #define PIN_CPU_PULSE_ENABLE                         _LATD6
-
 #define OLL_PIN_CPU_PULSE_ENABLE_PULSE_ENABLED       1
-// OLL_PIN_CPU_HV_ENABLE_HV_ENABLED defined in A37474_CONFIG.h file
-
-
 #define PIN_RS485_ENABLE                             _LATF4
-
 
 // LED Indicator Output Pins
 #define OLL_LED_ON                                   0
-
 #define PIN_LED_I1B                                  _LATG12
 #define PIN_LED_I1C                                  _LATG13
 #define PIN_LED_I1D                                  _LATA7
-
 #define PIN_LED_I2A                                  _LATC2
 #define PIN_LED_I2B                                  _LATC3
 #define PIN_LED_I2C                                  _LATC4
@@ -213,7 +199,6 @@ F  1 1 0 0 0 0 0 1 1 1 0 0 1 1 1 1
 #define PIN_TEST_POINT_F                             _LATB9
 
 
-
 #define PIN_LED_BEAM_ENABLE                          PIN_LED_I2A
 #define PIN_LED_I2C_OPERATION                        PIN_LED_I2B  // This pin is controlled by the CAN Module
 #define PIN_LED_OPERATIONAL                          PIN_LED_I2C
@@ -224,14 +209,11 @@ F  1 1 0 0 0 0 0 1 1 1 0 0 1 1 1 1
 #define PIN_LED_STANDBY                              PIN_LED_I1C
 #define PIN_LED_HV_ON                                PIN_LED_I1D
 
-
-
 // -----------------------  END IO PIN CONFIGURATION ------------------------ //
 
 
 
 // -------------------------------------------- INTERNAL MODULE CONFIGURATION --------------------------------------------------//
-
 /*
   --- SPI1 Port --- 
   This SPI port is used to connect with the gun driver
@@ -240,15 +222,6 @@ F  1 1 0 0 0 0 0 1 1 1 0 0 1 1 1 1
  */
 #define A37474_SPI1CON_VALUE  (FRAME_ENABLE_OFF & ENABLE_SDO_PIN & SPI_MODE16_OFF & SPI_SMP_OFF & SPI_CKE_OFF & SLAVE_ENABLE_OFF & CLK_POL_ACTIVE_HIGH & MASTER_ENABLE_ON)
 #define A37474_SPI1STAT_VALUE (SPI_ENABLE & SPI_IDLE_CON & SPI_RX_OVFLOW_CLR)   
-
-
-/*
-  --- Timer2 Setup ---
-  Period of 10mS
- */
-#define A37474_T2CON_VALUE     (T2_ON & T2_IDLE_CON & T2_GATE_OFF & T2_PS_1_8 & T2_32BIT_MODE_OFF & T2_SOURCE_INT)
-#define A37474_PR2_VALUE_US    10000   // 10mS
-#define A37474_PR2_VALUE       ((FCY_CLK/1000000)*A37474_PR2_VALUE_US/8)
 
 /*
   --- Timer3 Setup ---
@@ -263,8 +236,6 @@ F  1 1 0 0 0 0 0 1 1 1 0 0 1 1 1 1
 #define DELAY_FPGA_CABLE_DELAY 10
 
 // ---------------------- Converter Logic Board Interface Control ------------------------- //
-//#define WATCHDOG_HIGH                                48000
-//#define WATCHDOG_LOW                                 16000
 
 #define WATCHDOG_MODE_0         10
 #define WATCHDOG_MODE_1         20
@@ -275,7 +246,7 @@ F  1 1 0 0 0 0 0 1 1 1 0 0 1 1 1 1
 
 #define MIN_WD_VALUE_0          0x2202
 #define MAX_WD_VALUE_0          0x4200
-#define MIN_WD_VALUE_1          0xBE3F  //0xBFF0
+#define MIN_WD_VALUE_1          0xBE3F
 #define MAX_WD_VALUE_1          0xDE3D
 
 #define DAC_DIGITAL_OFF                              0x0000
@@ -297,6 +268,7 @@ F  1 1 0 0 0 0 0 1 1 1 0 0 1 1 1 1
 #define MAX1230_AVERAGE_BYTE                         0b00111000
 #define MAX1230_RESET_BYTE                           0b00010000
 
+// ---------------------- Fault Bits & Warning Bits ------------------------ //
 typedef struct {
     unsigned fault_0 : 1;
     unsigned fault_1 : 1;
@@ -342,16 +314,17 @@ typedef struct {
     unsigned warning_I : 1;
     unsigned warning_J : 1;
 } GunWarningBits;
+// ------------------------------------------------------------------------- //
 
+// ---------------------- Global Data -------------------------------------- //
 typedef struct {
-    //unsigned int watchdog_count_error;          // 
     unsigned int control_state; // This stores the state of the state machine
     unsigned int request_heater_enable; // This indicates that heater_enable has been requested (either from CAN module or from discrete inputs depending upon configuration)
     unsigned int request_hv_enable; // This indicates that hv_enable has been requested (either from CAN module or from discrete inputs depending upon configuration)
     unsigned int request_beam_enable; // This indicates that beam_enable has been requested (either from CAN module or from discrete inputs depending upon configuration)
     unsigned int reset_active; // This indicates that reset has been requested (either from CAN module or from discrete inputs depending upon configuration)
     unsigned int ethernet_reset_cmd;
-
+    
     unsigned int heater_start_up_attempts; // This counts the number of times the heater has started up without successfully completing it's ramp up.
 
     unsigned int run_time_counter; // This counts how long the unit has been running for.  It wraps every 11 minutes
@@ -372,7 +345,6 @@ typedef struct {
     unsigned int previous_0x0B_val;
     unsigned int previous_0x0C_val;
     unsigned int previous_0x0D_val;
-
 
     volatile unsigned char control_config; // This indicates when all set values from the CAN interface have been received
 
@@ -405,7 +377,6 @@ typedef struct {
     unsigned int heater_voltage_current_limited; // This counter is used to track how long the heater is opperating in current limited mode. 
     unsigned int previous_state_pin_customer_hv_on; // This stores the previous state of customer HV on input.  An On -> Off transion of this pin is used to generate a reset in discrete control mode
 
-
     // These are the Data Structures for the DAC outputs on the converter logic board
     TYPE_PUBLIC_ANALOG_OUTPUT analog_output_high_voltage;
     TYPE_PUBLIC_ANALOG_OUTPUT analog_output_top_voltage;
@@ -414,15 +385,13 @@ typedef struct {
     unsigned int dac_digital_heater_enable;
     unsigned int dac_digital_top_enable;
     unsigned int dac_digital_trigger_enable;
-    unsigned int dac_digital_watchdog_oscillator; //
+    unsigned int dac_digital_watchdog_oscillator;
 
     // These are the Data Structures for the on board DAC outputs
     TYPE_PUBLIC_ANALOG_OUTPUT monitor_heater_voltage;
     TYPE_PUBLIC_ANALOG_OUTPUT monitor_heater_current;
     TYPE_PUBLIC_ANALOG_OUTPUT monitor_cathode_voltage;
     TYPE_PUBLIC_ANALOG_OUTPUT monitor_grid_voltage;
-
-
 
     // These are the Data Structures for the Digital Data from the FPGA on the Converter Logic board
     TYPE_DIGITAL_INPUT fpga_coverter_logic_pcb_rev_mismatch;
@@ -468,7 +437,6 @@ typedef struct {
     TYPE_DIGITAL_INPUT interlock_relay_closed;
 
     // These are the anlog input from the PICs internal DAC
-
     TYPE_PUBLIC_ANALOG_INPUT pos_5v_mon; // an13
     TYPE_PUBLIC_ANALOG_INPUT pos_15v_mon; // an14
     TYPE_PUBLIC_ANALOG_INPUT neg_15v_mon; // an15
@@ -498,14 +466,12 @@ typedef struct {
     GunFaultBits gun_fault;
     GunWarningBits gun_warnings;
     
-
 } TYPE_GLOBAL_DATA_A37474;
 
 extern TYPE_GLOBAL_DATA_A37474 global_data_A37474;
 
 
 // ---------------------- FAULT & STATUS   CONFIGURATION ---------------------------- //
-
 #define _FAULT_FPGA_FIRMWARE_MAJOR_REV_MISMATCH        global_data_A37474.gun_fault.fault_0
 #define _FAULT_ADC_HV_V_MON_OVER_RELATIVE              global_data_A37474.gun_fault.fault_1
 #define _FAULT_ADC_HV_V_MON_UNDER_RELATIVE             global_data_A37474.gun_fault.fault_2 
@@ -584,7 +550,6 @@ extern TYPE_GLOBAL_DATA_A37474 global_data_A37474;
 
 #ifdef __noModbusLibrary
 
-
 #define UART1_BAUDRATE             19200        // U1 Baud Rate
 
 #define MODBUS_U1MODE_VALUE        (UART_EN & UART_IDLE_STOP & UART_DIS_WAKE & UART_DIS_LOOPBACK & UART_DIS_ABAUD & UART_NO_PAR_8BIT & UART_2STOPBITS)
@@ -655,8 +620,6 @@ typedef struct {
     unsigned int data[125];
     unsigned char bit_data[125];
 } MODBUS_MESSAGE;
-
-//extern MODBUS_MESSAGE  current_command_ptr;
 
 #define ETMMODBUS_COMMAND_SIZE_MIN    8
 
