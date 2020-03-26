@@ -286,10 +286,6 @@ typedef struct {
     unsigned fault_D : 1;
     unsigned fault_E : 1;
     unsigned fault_F : 1;
-    unsigned fault_G : 1;
-    unsigned fault_H : 1;
-    unsigned fault_I : 1;
-    unsigned fault_J : 1;
 } GunFaultBits;
 
 typedef struct {
@@ -309,10 +305,6 @@ typedef struct {
     unsigned warning_D : 1;
     unsigned warning_E : 1;
     unsigned warning_F : 1;
-    unsigned warning_G : 1;
-    unsigned warning_H : 1;
-    unsigned warning_I : 1;
-    unsigned warning_J : 1;
 } GunWarningBits;
 // ------------------------------------------------------------------------- //
 
@@ -474,24 +466,24 @@ extern TYPE_GLOBAL_DATA_A37474 global_data_A37474;
 // ---------------------- FAULT & STATUS   CONFIGURATION ---------------------------- //
 #define _FAULT_FPGA_FIRMWARE_MAJOR_REV_MISMATCH        global_data_A37474.gun_fault.fault_0
 #define _FAULT_ADC_HV_V_MON_OVER_RELATIVE              global_data_A37474.gun_fault.fault_1
-#define _FAULT_ADC_HV_V_MON_UNDER_RELATIVE             global_data_A37474.gun_fault.fault_2 
-#define _FAULT_ADC_HTR_V_MON_OVER_RELATIVE             global_data_A37474.gun_fault.fault_3 
-#define _FAULT_ADC_HTR_V_MON_UNDER_RELATIVE            global_data_A37474.gun_fault.fault_4 
-#define _FAULT_ADC_HTR_I_MON_OVER_ABSOLUTE             global_data_A37474.gun_fault.fault_5
-#define _FAULT_ADC_HTR_I_MON_UNDER_ABSOLUTE            global_data_A37474.gun_fault.fault_6
-#define _FAULT_ADC_TOP_V_MON_OVER_RELATIVE             global_data_A37474.gun_fault.fault_7
-#define _FAULT_ADC_TOP_V_MON_UNDER_RELATIVE            global_data_A37474.gun_fault.fault_8
-#define _FAULT_ADC_BIAS_V_MON_OVER_ABSOLUTE            global_data_A37474.gun_fault.fault_9
-#define _FAULT_ADC_BIAS_V_MON_UNDER_ABSOLUTE           global_data_A37474.gun_fault.fault_A 
-#define _FAULT_SPI_COMMUNICATION                       global_data_A37474.gun_fault.fault_B
-#define _FAULT_ADC_DIGITAL_ARC                         global_data_A37474.gun_fault.fault_C
-#define _FAULT_ADC_DIGITAL_OVER_TEMP                   global_data_A37474.gun_fault.fault_D
-#define _FAULT_ADC_DIGITAL_GRID                        global_data_A37474.gun_fault.fault_E                
-#define _FPGA_CURRENT_MONITOR_PULSE_WIDTH_FAULT        global_data_A37474.gun_fault.fault_F
-#define _FPGA_PRF_FAULT                                global_data_A37474.gun_fault.fault_G
-#define _FAULT_HEATER_VOLTAGE_CURRENT_LIMITED          global_data_A37474.gun_fault.fault_H
-#define _FAULT_HEATER_RAMP_TIMEOUT                     global_data_A37474.gun_fault.fault_I
-#define _FAULT_MUX_CONFIG_FAILURE                      global_data_A37474.gun_fault.fault_J
+#define _FAULT_ADC_HV_V_MON_UNDER_RELATIVE             global_data_A37474.gun_fault.fault_1 
+#define _FAULT_ADC_HTR_V_MON_OVER_RELATIVE             global_data_A37474.gun_fault.fault_2 
+#define _FAULT_ADC_HTR_V_MON_UNDER_RELATIVE            global_data_A37474.gun_fault.fault_2 
+#define _FAULT_ADC_HTR_I_MON_OVER_ABSOLUTE             global_data_A37474.gun_fault.fault_3
+#define _FAULT_ADC_HTR_I_MON_UNDER_ABSOLUTE            global_data_A37474.gun_fault.fault_4
+#define _FAULT_ADC_TOP_V_MON_OVER_RELATIVE             global_data_A37474.gun_fault.fault_5
+#define _FAULT_ADC_TOP_V_MON_UNDER_RELATIVE            global_data_A37474.gun_fault.fault_5
+#define _FAULT_ADC_BIAS_V_MON_OVER_ABSOLUTE            global_data_A37474.gun_fault.fault_6
+#define _FAULT_ADC_BIAS_V_MON_UNDER_ABSOLUTE           global_data_A37474.gun_fault.fault_6 
+#define _FAULT_SPI_COMMUNICATION                       global_data_A37474.gun_fault.fault_7
+#define _FAULT_ADC_DIGITAL_ARC                         global_data_A37474.gun_fault.fault_8
+#define _FAULT_ADC_DIGITAL_OVER_TEMP                   global_data_A37474.gun_fault.fault_9
+#define _FAULT_ADC_DIGITAL_GRID                        global_data_A37474.gun_fault.fault_A                
+#define _FPGA_CURRENT_MONITOR_PULSE_WIDTH_FAULT        global_data_A37474.gun_fault.fault_B
+#define _FPGA_PRF_FAULT                                global_data_A37474.gun_fault.fault_C
+#define _FAULT_HEATER_VOLTAGE_CURRENT_LIMITED          global_data_A37474.gun_fault.fault_D
+#define _FAULT_HEATER_RAMP_TIMEOUT                     global_data_A37474.gun_fault.fault_E
+#define _FAULT_MUX_CONFIG_FAILURE                      global_data_A37474.gun_fault.fault_F
 
 
 #define _STATUS_CUSTOMER_HV_ON                         global_data_A37474.gun_warnings.warning_0
@@ -501,18 +493,18 @@ extern TYPE_GLOBAL_DATA_A37474 global_data_A37474;
 #define _STATUS_INTERLOCK_INHIBITING_HV                global_data_A37474.gun_warnings.warning_4
 #define _FAULT_CONVERTER_LOGIC_ADC_READ_FAILURE        global_data_A37474.gun_warnings.warning_5
 #define _FPGA_ARC_COUNTER_GREATER_ZERO                 global_data_A37474.gun_warnings.warning_6
-#define _FPGA_ARC_HIGH_VOLTAGE_INHIBIT_ACTIVE          global_data_A37474.gun_warnings.warning_7
-#define _FPGA_MODULE_TEMP_GREATER_THAN_75_C            global_data_A37474.gun_warnings.warning_8
-#define _FAULT_ADC_DIGITAL_PULSE_WIDTH_DUTY            global_data_A37474.gun_warnings.warning_9
-#define _FPGA_PULSE_WIDTH_LIMITING                     global_data_A37474.gun_warnings.warning_A
-#define _FPGA_GRID_MODULE_HARDWARE_FAULT               global_data_A37474.gun_warnings.warning_B
-#define _FPGA_GRID_MODULE_OVER_VOLTAGE_FAULT           global_data_A37474.gun_warnings.warning_C
-#define _FPGA_GRID_MODULE_UNDER_VOLTAGE_FAULT          global_data_A37474.gun_warnings.warning_D
-#define _FPGA_GRID_MODULE_BIAS_VOLTAGE_FAULT           global_data_A37474.gun_warnings.warning_E
-#define _FPGA_HV_REGULATION_WARNING                    global_data_A37474.gun_warnings.warning_F
-#define _FPGA_DIPSWITCH_1_ON                           global_data_A37474.gun_warnings.warning_G
-#define _FPGA_TEST_MODE_TOGGLE_SWITCH_TEST_MODE        global_data_A37474.gun_warnings.warning_H
-#define _FPGA_LOCAL_MODE_TOGGLE_SWITCH_LOCAL_MODE      global_data_A37474.gun_warnings.warning_I
+#define _FPGA_ARC_HIGH_VOLTAGE_INHIBIT_ACTIVE          global_data_A37474.gun_warnings.warning_6
+#define _FPGA_MODULE_TEMP_GREATER_THAN_75_C            global_data_A37474.gun_warnings.warning_7
+#define _FAULT_ADC_DIGITAL_PULSE_WIDTH_DUTY            global_data_A37474.gun_warnings.warning_8
+#define _FPGA_PULSE_WIDTH_LIMITING                     global_data_A37474.gun_warnings.warning_8
+#define _FPGA_GRID_MODULE_HARDWARE_FAULT               global_data_A37474.gun_warnings.warning_9
+#define _FPGA_GRID_MODULE_OVER_VOLTAGE_FAULT           global_data_A37474.gun_warnings.warning_A
+#define _FPGA_GRID_MODULE_UNDER_VOLTAGE_FAULT          global_data_A37474.gun_warnings.warning_A
+#define _FPGA_GRID_MODULE_BIAS_VOLTAGE_FAULT           global_data_A37474.gun_warnings.warning_B
+#define _FPGA_HV_REGULATION_WARNING                    global_data_A37474.gun_warnings.warning_C
+#define _FPGA_DIPSWITCH_1_ON                           global_data_A37474.gun_warnings.warning_D
+#define _FPGA_TEST_MODE_TOGGLE_SWITCH_TEST_MODE        global_data_A37474.gun_warnings.warning_E
+#define _FPGA_LOCAL_MODE_TOGGLE_SWITCH_LOCAL_MODE      global_data_A37474.gun_warnings.warning_F
 
 
 

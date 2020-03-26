@@ -613,7 +613,6 @@ void CanProcessCommand(unsigned char length, unsigned char * data) {
 
         case SDO_IDX_GD_FAULT:
             if (is_upload) {
-
                 global_data_A37474._FAULT_REGISTER = *(unsigned int*) &global_data_A37474.gun_fault;
                 global_data_A37474._WARNING_REGISTER = *(unsigned int*) &global_data_A37474.gun_warnings;
                 set_value = global_data_A37474._FAULT_REGISTER;
