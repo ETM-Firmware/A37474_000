@@ -186,7 +186,12 @@ void DoStateMachine(void) {
             global_data_A37474.watchdog_counter = 0;
             global_data_A37474.heater_set_point = 0;
             ETMAnalogOutputSetPoint(&global_data_A37474.analog_output_heater_voltage, global_data_A37474.heater_set_point);
-            if (!global_data_A37474.request_heater_enable) {
+            ETMAnalogInputInitializeRelativeTripLevels(&global_data_A37474.input_htr_v_mon,
+                    global_data_A37474.heater_set_point,
+                    ADC_HTR_V_MON_RELATIVE_TRIP_SCALE,
+                    ADC_HTR_V_MON_RELATIVE_TRIP_FLOOR,
+                    ADC_HTR_V_MON_RELATIVE_TRIP_COUNT);
+			if (!global_data_A37474.request_heater_enable) {
                 global_data_A37474.heater_start_up_attempts = 0;
             }
             global_data_A37474.heater_voltage_current_limited = 0;
@@ -206,7 +211,12 @@ void DoStateMachine(void) {
             global_data_A37474.watchdog_counter = 0;
             global_data_A37474.heater_set_point = 0;
             ETMAnalogOutputSetPoint(&global_data_A37474.analog_output_heater_voltage, global_data_A37474.heater_set_point);
-            global_data_A37474.heater_ramp_interval = 0;
+            ETMAnalogInputInitializeRelativeTripLevels(&global_data_A37474.input_htr_v_mon,
+                    global_data_A37474.heater_set_point,
+                    ADC_HTR_V_MON_RELATIVE_TRIP_SCALE,
+                    ADC_HTR_V_MON_RELATIVE_TRIP_FLOOR,
+                    ADC_HTR_V_MON_RELATIVE_TRIP_COUNT);
+			global_data_A37474.heater_ramp_interval = 0;
             global_data_A37474.heater_start_up_attempts++;
             global_data_A37474.heater_ramp_up_time = MAX_HEATER_RAMP_UP_TIME;
             DisableBeam();
