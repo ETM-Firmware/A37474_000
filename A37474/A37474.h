@@ -1,9 +1,9 @@
 /*
   -------------------------------------------
-  This file contains configuration data specific to the A37474-000
+  This file contains configuration data specific to the A37474 Ethernet Interface Series
   
   Tyler Evans
-  3.19.20
+  3.30.20
 
   --------------------------------------------
  */

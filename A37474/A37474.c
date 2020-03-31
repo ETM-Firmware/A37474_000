@@ -1,10 +1,10 @@
 /*
   -------------------------------------------
-  This is firmware for the Gun Driver Board A37474-000
+  This is firmware for the Gun Driver Board A37474 Ethernet Interface Series
   
   Re-Written with double buffered EEPROMs and Library 5
   Tyler Evans
-  3.24.20
+  3.30.20
 
   --------------------------------------------
  */
@@ -30,6 +30,9 @@ unsigned int CheckHeaterFault(void); // Check for any fault the requires the hea
 unsigned int CheckFault(void); // Checks for any fault that does not require the heater to be turned off 
 unsigned int CheckPreHVFault(void);
 unsigned int CheckPreTopFault(void);
+
+void HeaterFixedRamp(void);
+void HeaterCurrentLimitedRamp(void);
 
 // Helper functions for DoA37474
 void DoA37474(void);
@@ -1180,49 +1183,16 @@ void DoA37474(void) {
             global_data_A37474.heater_voltage_target = MAX_PROGRAM_HTR_VOLTAGE;
         }
 
-        // Ramp the heater voltage
-        if (global_data_A37474.fault_holdoff_state == FAULT_HOLDOFF_STATE) {
-            global_data_A37474.heater_voltage_current_limited = 0;
-        }
-
-        if (global_data_A37474.control_state == STATE_HEATER_RAMP_UP) {
-            global_data_A37474.heater_ramp_interval++;
-            if (global_data_A37474.heater_ramp_interval >= HEATER_RAMP_UP_TIME_PERIOD) {
-                global_data_A37474.heater_ramp_interval = 0;
-                if (ETMAnalogInputGetReading(&global_data_A37474.input_htr_i_mon) < MAX_HEATER_CURRENT_DURING_RAMP_UP) {
-                    global_data_A37474.heater_set_point += HEATER_RAMP_UP_INCREMENT;
-                    ETMAnalogOutputSetPoint(&global_data_A37474.analog_output_heater_voltage, global_data_A37474.heater_set_point);
-                    ETMAnalogInputInitializeRelativeTripLevels(&global_data_A37474.input_htr_v_mon,
-                            global_data_A37474.heater_set_point,
-                            ADC_HTR_V_MON_RELATIVE_TRIP_SCALE,
-                            ADC_HTR_V_MON_RELATIVE_TRIP_FLOOR,
-                            ADC_HTR_V_MON_RELATIVE_TRIP_COUNT);
-                }
-            }
-
-        } else if (global_data_A37474.control_state > STATE_HEATER_RAMP_UP) {
-            global_data_A37474.heater_ramp_interval++;
-            if (global_data_A37474.heater_ramp_interval >= HEATER_REGULATION_TIME_PERIOD) {
-                global_data_A37474.heater_ramp_interval = 0;
-                if (ETMAnalogInputGetReading(&global_data_A37474.input_htr_i_mon) < MAX_HEATER_CURRENT_DURING_RAMP_UP) {
-                    global_data_A37474.heater_set_point += HEATER_REGULATION_INCREMENT;
-                    ETMAnalogOutputSetPoint(&global_data_A37474.analog_output_heater_voltage, global_data_A37474.heater_set_point);
-                    ETMAnalogInputInitializeRelativeTripLevels(&global_data_A37474.input_htr_v_mon,
-                            global_data_A37474.heater_set_point,
-                            ADC_HTR_V_MON_RELATIVE_TRIP_SCALE,
-                            ADC_HTR_V_MON_RELATIVE_TRIP_FLOOR,
-                            ADC_HTR_V_MON_RELATIVE_TRIP_COUNT);
-                    if (global_data_A37474.heater_voltage_current_limited) {
-                        global_data_A37474.heater_voltage_current_limited--;
-                    }
-                } else {
-                    global_data_A37474.heater_voltage_current_limited++;
-                    if (global_data_A37474.heater_voltage_current_limited > HEATER_VOLTAGE_CURRENT_LIMITED_FAULT_TIME) {
-                        global_data_A37474.heater_voltage_current_limited = HEATER_VOLTAGE_CURRENT_LIMITED_FAULT_TIME;
-                    }
-                }
-            }
-        }
+#ifdef Reflexion_A37474_000
+        HeaterFixedRamp();
+#endif
+#ifdef Altair_A37474_001
+#ifdef AET_A37474_450
+#ifdef E2V_A37474_002
+        HeaterCurrentLimitedRamp();
+#endif
+#endif
+#endif
 
         if (ETMAnalogOutputGetSetPoint(&global_data_A37474.analog_output_heater_voltage) > global_data_A37474.heater_voltage_target) {
             ETMAnalogOutputSetPoint(&global_data_A37474.analog_output_heater_voltage, global_data_A37474.heater_voltage_target);
@@ -1233,7 +1203,7 @@ void DoA37474(void) {
                     ADC_HTR_V_MON_RELATIVE_TRIP_COUNT);
         }
 
-        // Send out Data to local DAC and offboard.  Each channel will be updated once every 40mS
+        // Send out Data to local DAC and off board.  Each channel will be updated once every 40mS
         // Do not send out while in state "STATE_WAIT_FOR_CONFIG" because the module is not ready to receive data and
         // you will just get data transfer errors
         if (global_data_A37474.control_state != STATE_WAIT_FOR_CONFIG) {
@@ -1282,6 +1252,80 @@ void DoA37474(void) {
 
         // Mange LED and Status Outputs
         UpdateLEDandStatusOutuputs();
+    }
+}
+
+void HeaterFixedRamp(void) {
+    // Ramp the heater voltage
+    if (global_data_A37474.fault_holdoff_state == FAULT_HOLDOFF_STATE) {
+        global_data_A37474.heater_voltage_current_limited = 0;
+    }
+
+    if (global_data_A37474.control_state == STATE_HEATER_RAMP_UP) {
+        global_data_A37474.heater_ramp_interval++;
+        if (global_data_A37474.heater_ramp_interval >= HEATER_RAMP_UP_TIME_PERIOD) {
+            global_data_A37474.heater_ramp_interval = 0;
+            if (ETMAnalogInputGetReading(&global_data_A37474.input_htr_i_mon) < MAX_HEATER_CURRENT_DURING_RAMP_UP) {
+                global_data_A37474.heater_set_point += HEATER_RAMP_UP_INCREMENT;
+                ETMAnalogOutputSetPoint(&global_data_A37474.analog_output_heater_voltage, global_data_A37474.heater_set_point);
+                ETMAnalogInputInitializeRelativeTripLevels(&global_data_A37474.input_htr_v_mon,
+                        global_data_A37474.heater_set_point,
+                        ADC_HTR_V_MON_RELATIVE_TRIP_SCALE,
+                        ADC_HTR_V_MON_RELATIVE_TRIP_FLOOR,
+                        ADC_HTR_V_MON_RELATIVE_TRIP_COUNT);
+            }
+        }
+
+    } else if (global_data_A37474.control_state > STATE_HEATER_RAMP_UP) {
+        global_data_A37474.heater_ramp_interval++;
+        if (global_data_A37474.heater_ramp_interval >= HEATER_REGULATION_TIME_PERIOD) {
+            global_data_A37474.heater_ramp_interval = 0;
+            if (ETMAnalogInputGetReading(&global_data_A37474.input_htr_i_mon) < MAX_HEATER_CURRENT_DURING_RAMP_UP) {
+                global_data_A37474.heater_set_point += HEATER_REGULATION_INCREMENT;
+                ETMAnalogOutputSetPoint(&global_data_A37474.analog_output_heater_voltage, global_data_A37474.heater_set_point);
+                ETMAnalogInputInitializeRelativeTripLevels(&global_data_A37474.input_htr_v_mon,
+                        global_data_A37474.heater_set_point,
+                        ADC_HTR_V_MON_RELATIVE_TRIP_SCALE,
+                        ADC_HTR_V_MON_RELATIVE_TRIP_FLOOR,
+                        ADC_HTR_V_MON_RELATIVE_TRIP_COUNT);
+                if (global_data_A37474.heater_voltage_current_limited) {
+                    global_data_A37474.heater_voltage_current_limited--;
+                }
+            } else {
+                global_data_A37474.heater_voltage_current_limited++;
+                if (global_data_A37474.heater_voltage_current_limited > HEATER_VOLTAGE_CURRENT_LIMITED_FAULT_TIME) {
+                    global_data_A37474.heater_voltage_current_limited = HEATER_VOLTAGE_CURRENT_LIMITED_FAULT_TIME;
+                }
+            }
+        }
+    }
+}
+
+void HeaterCurrentLimitedRamp(void) {
+    if ((global_data_A37474.control_state == STATE_HEATER_RAMP_UP) || (global_data_A37474.fault_holdoff_state == FAULT_HOLDOFF_STATE)) {
+        global_data_A37474.heater_voltage_current_limited = 0;
+    }
+    global_data_A37474.heater_ramp_interval++;
+
+    if (global_data_A37474.heater_ramp_interval >= HEATER_REGULATION_TIME_PERIOD) {
+        global_data_A37474.heater_ramp_interval = 0;
+        if (ETMAnalogInputGetReading(&global_data_A37474.input_htr_i_mon) < MAX_HEATER_CURRENT_DURING_RAMP_UP) {
+            global_data_A37474.heater_set_point += HEATER_REGULATION_INCREMENT;
+            ETMAnalogOutputSetPoint(&global_data_A37474.analog_output_heater_voltage, global_data_A37474.heater_set_point);
+            ETMAnalogInputInitializeRelativeTripLevels(&global_data_A37474.input_htr_v_mon,
+                    global_data_A37474.heater_set_point,
+                    ADC_HTR_V_MON_RELATIVE_TRIP_SCALE,
+                    ADC_HTR_V_MON_RELATIVE_TRIP_FLOOR,
+                    ADC_HTR_V_MON_RELATIVE_TRIP_COUNT);
+            if (global_data_A37474.heater_voltage_current_limited) {
+                global_data_A37474.heater_voltage_current_limited--;
+            }
+        } else {
+            global_data_A37474.heater_voltage_current_limited++;
+            if (global_data_A37474.heater_voltage_current_limited > HEATER_VOLTAGE_CURRENT_LIMITED_FAULT_TIME) {
+                global_data_A37474.heater_voltage_current_limited = HEATER_VOLTAGE_CURRENT_LIMITED_FAULT_TIME;
+            }
+        }
     }
 }
 

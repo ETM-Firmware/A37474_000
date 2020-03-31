@@ -1,25 +1,34 @@
 /*
   -------------------------------------------
-  This file contains configuration data specific to the A37474-000
+  This file contains configuration data specific to the A37474 Ethernet Interface Series
   
   Tyler Evans
-  3.19.20
+  3.30.20
 
   --------------------------------------------
-*/
+ */
 
 #ifndef __A37474_CONFIG_H
 #define __A37474_CONFIG_H
 
-#define __A37474_000
+#define Reflexion_A37474_000
+//#define Altair_A37474_001
+//#define AET_A37474_450
+//#define E2V_A37474_002
 
 // Make sure that at least one board is selected
-#ifndef __A37474_000
+#ifndef Reflexion_A37474_000
+#ifndef Altair_A37474_001
+#ifndef AET_A37474_450
+#ifndef E2V_A37474_002
 #error "No Specific Board Selected"
+#endif
+#endif
+#endif
 #endif
 
 
-#ifdef __A37474_000
+#ifdef Reflexion_A37474_000
 #define __MODE_ETHERNET_INTERFACE
 #define __MODE_MODBUS_MONITOR
 #define OLL_PIN_CPU_HV_ENABLE_HV_ENABLED        1
@@ -29,7 +38,8 @@
 #define HEATER_VOLTAGE_MAX_SET_POINT            8000         // 8V Actual limit
 #define HEATER_VOLTAGE_MIN_SET_POINT            0            // 0V Lower Limit on Heater Voltage
 #define MAX_HEATER_CURRENT_DURING_RAMP_UP       1420         // 1.420 Amps. [mA Units]. Whenever the heater voltage is increased (ramp-up or increasing the set point).  The voltage will be current limited by this current
-#define HTR_OC_ABS                              1600         // 1.600 Amps
+#define HTR_OC_ABS                              1600         // 1.600 Amps.
+#define HTR_UC_ABS                              200          // 200mA.
 #define HV_MAX_SET_BOARD_SPEC                   20000        // -20KV
 #define HV_MIN_SET_BOARD_SPEC                   0            // 0KV
 #define TOP_MAX_SET_BOARD_SPEC                  22000        // 140V
@@ -37,8 +47,91 @@
 #define BIAS_OVER_VOLTAGE                       18000        // -180V
 #define BIAS_UNDER_VOLTAGE                      14000        // -140V
 #define BOARD_DASH_NUMBER                       000
+#ifdef  Altair_A37474_001
+#error "Multiple boards selected"
+#endif
+#ifdef  AET_A37474_450
+#error "Multiple boards selected"
+#endif
+#ifdef  E2V_A37474_002
+#error "Multiple boards selected"
+#endif
 #endif
 
+
+#ifdef Altair_A37474_001
+#define __MODE_ETHERNET_INTERFACE
+#define __MODE_MODBUS_MONITOR
+#define OLL_PIN_CPU_HV_ENABLE_HV_ENABLED        1
+#define MAX_HEATER_RAMP_UP_TIME                 21000        // 3.5min.  If the heater does not reach it's programed voltage in this time a fault will be generated.
+#define HEATER_RAMP_UP_TIME_PERIOD              30           // 300ms.  During heater ramp up, the heater voltage will be increased every N 10ms.
+#define MAX_PROGRAM_HTR_VOLTAGE                 8000         // 8V Limit on what customer can set
+#define HEATER_VOLTAGE_MAX_SET_POINT            8000         // 8V Actual limit
+#define HEATER_VOLTAGE_MIN_SET_POINT            0            // 0V Lower Limit on Heater Voltage
+#define MAX_HEATER_CURRENT_DURING_RAMP_UP       3650         // 3.650 Amps. Whenever the heater voltage is increased (ramp-up or increasing the set point).  The voltage will be current limited by this current
+#define HTR_OC_ABS                              3750         // 3.750 Amps
+#define HTR_UC_ABS                              0            // 0mA.
+#define HV_MAX_SET_BOARD_SPEC                   20000        // -20KV
+#define HV_MIN_SET_BOARD_SPEC                   0            // 0KV
+#define TOP_MAX_SET_BOARD_SPEC                  22000        // 140V
+#define TOP_MIN_SET_BOARD_SPEC                  0            // -80V
+#define BIAS_OVER_VOLTAGE                       18000        // -180V
+#define BIAS_UNDER_VOLTAGE                      14000        // -140V
+#define BOARD_DASH_NUMBER                       001
+#ifdef  AET_A37474_450
+#error "Multiple boards selected"
+#endif
+#ifdef  E2V_A37474_002
+#error "Multiple boards selected"
+#endif
+#endif
+
+
+#ifdef AET_A37474_450
+#define __MODE_ETHERNET_INTERFACE
+#define __MODE_MODBUS_MONITOR
+#define OLL_PIN_CPU_HV_ENABLE_HV_ENABLED        1
+#define MAX_HEATER_RAMP_UP_TIME                 30000        // 5.0min.  If the heater does not reach it's programed voltage in this time a fault will be generated.
+#define HEATER_RAMP_UP_TIME_PERIOD              30           // 300ms.  During heater ramp up, the heater voltage will be increased every N 10ms.
+#define MAX_PROGRAM_HTR_VOLTAGE                 8300         // 8.3 V.  Limit on what customer can set
+#define HEATER_VOLTAGE_MAX_SET_POINT            8300         // 8.3V.  Actual limit
+#define HEATER_VOLTAGE_MIN_SET_POINT            0            // 0V.  Lower Limit on Heater Voltage
+#define MAX_HEATER_CURRENT_DURING_RAMP_UP       5500         // 5.50 Amps
+#define HTR_OC_ABS                              5600         // 5.600 Amps
+#define HTR_UC_ABS                              0            // 0mA.
+#define HV_MAX_SET_BOARD_SPEC                   20000        // -20KV
+#define HV_MIN_SET_BOARD_SPEC                   0            // -0KV
+#define TOP_MAX_SET_BOARD_SPEC                  40000        // 320V
+#define TOP_MIN_SET_BOARD_SPEC                  0            // -80V
+#define BIAS_OVER_VOLTAGE                       18000        // -180V
+#define BIAS_UNDER_VOLTAGE                      14000        // -140V
+#define BOARD_DASH_NUMBER                       450          // for A37474-450Z
+#ifdef  E2V_A37474_002
+#error "Multiple boards selected"
+#endif
+#endif
+
+
+#ifdef E2V_A37474_002
+#define __MODE_ETHERNET_INTERFACE
+#define __MODE_MODBUS_MONITOR
+#define OLL_PIN_CPU_HV_ENABLE_HV_ENABLED        1
+#define MAX_HEATER_RAMP_UP_TIME                 21000        // 3.5min.  If the heater does not reach it's programed voltage in this time a fault will be generated.
+#define HEATER_RAMP_UP_TIME_PERIOD              30           // 300ms.  During heater ramp up, the heater voltage will be increased every N 10ms.
+#define MAX_PROGRAM_HTR_VOLTAGE                 8000         // 8.0 V.  Limit on what customer can set
+#define HEATER_VOLTAGE_MAX_SET_POINT            8000         // 8.0V.  Actual limit
+#define HEATER_VOLTAGE_MIN_SET_POINT            0            // 0V.  Lower Limit on Heater Voltage
+#define MAX_HEATER_CURRENT_DURING_RAMP_UP       3750         // 3.750 Amps
+#define HTR_OC_ABS                              4500         // 4.500 Amps
+#define HTR_UC_ABS                              0            // 0mA.
+#define HV_MAX_SET_BOARD_SPEC                   20000        // -20KV
+#define HV_MIN_SET_BOARD_SPEC                   5000         // -5KV
+#define TOP_MAX_SET_BOARD_SPEC                  22000        // 140V
+#define TOP_MIN_SET_BOARD_SPEC                  0            // -80V
+#define BIAS_OVER_VOLTAGE                       18000        // -180V
+#define BIAS_UNDER_VOLTAGE                      14000        // -140V
+#define BOARD_DASH_NUMBER                       002          // for A37474-002Z
+#endif
 
 /*----------------------------------------------------------------------*/
 /*
@@ -144,7 +237,16 @@
 #define PULSE_GATE_DISCRETE                   0xFF
 
 
-#ifdef __A37474_000
+#ifdef Reflexion_A37474_000
+#define CONFIG_SELECT_PIN_BYTE               (SELECT_HV_ENABLE_SERIAL & SELECT_BEAM_ENABLE_SERIAL & SELECT_HV_ILOCK_EXTERNAL_CONTROL & PULSE_GATE_DISCRETE)
+#endif
+#ifdef Altair_A37474_001
+#define CONFIG_SELECT_PIN_BYTE               (SELECT_HV_ENABLE_SERIAL & SELECT_BEAM_ENABLE_SERIAL & SELECT_HV_ILOCK_EXTERNAL_CONTROL & PULSE_GATE_DISCRETE)
+#endif
+#ifdef AET_A37474_450
+#define CONFIG_SELECT_PIN_BYTE               (SELECT_HV_ENABLE_SERIAL & SELECT_BEAM_ENABLE_SERIAL & SELECT_HV_ILOCK_EXTERNAL_CONTROL & PULSE_GATE_DISCRETE)
+#endif
+#ifdef E2V_A37474_002
 #define CONFIG_SELECT_PIN_BYTE               (SELECT_HV_ENABLE_SERIAL & SELECT_BEAM_ENABLE_SERIAL & SELECT_HV_ILOCK_EXTERNAL_CONTROL & PULSE_GATE_DISCRETE)
 #endif
 
@@ -208,8 +310,8 @@
 //HTR I Input
 #define ADC_HTR_I_MON_FIXED_SCALE             .10419
 #define ADC_HTR_I_MON_FIXED_OFFSET            0
-#define ADC_HTR_I_MON_OVER_LIMIT_ABSOLUTE     HTR_OC_ABS          // 1.750 Amps
-#define ADC_HTR_I_MON_UNDER_LIMIT_ABSOLUTE    200                 // 0.200 Amps
+#define ADC_HTR_I_MON_OVER_LIMIT_ABSOLUTE     HTR_OC_ABS
+#define ADC_HTR_I_MON_UNDER_LIMIT_ABSOLUTE    HTR_UC_ABS
 #define ADC_HTR_I_MON_ABSOLUTE_TRIP_TIME      500                 // 500mS
 
 //TOP Input
@@ -259,7 +361,7 @@
 // ------------- A37474 Internal PIC ADC Input Settings --------------------- //
 #define POS_5V_FIXED_SCALE                    .15259                            // 1mV per lsb
 #define POS_5V_FIXED_OFFSET                   0
- 
+
 #define POS_15V_FIXED_SCALE                   .32328
 #define POS_15V_FIXED_OFFSET                  0
 
