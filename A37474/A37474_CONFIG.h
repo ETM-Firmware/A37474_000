@@ -15,13 +15,16 @@
 //#define Altair_A37474_001
 //#define AET_A37474_450
 //#define E2V_A37474_002
+//#define Sordina_A37474_950
 
 // Make sure that at least one board is selected
 #ifndef Reflexion_A37474_000
 #ifndef Altair_A37474_001
 #ifndef AET_A37474_450
 #ifndef E2V_A37474_002
+#ifndef Sordina_A37474_950
 #error "No Specific Board Selected"
+#endif
 #endif
 #endif
 #endif
@@ -56,6 +59,9 @@
 #ifdef  E2V_A37474_002
 #error "Multiple boards selected"
 #endif
+#ifdef  Sordina_A37474_950
+#error "Multiple boards selected"
+#endif
 #endif
 
 
@@ -84,6 +90,9 @@
 #ifdef  E2V_A37474_002
 #error "Multiple boards selected"
 #endif
+#ifdef  Sordina_A37474_950
+#error "Multiple boards selected"
+#endif
 #endif
 
 
@@ -109,6 +118,9 @@
 #ifdef  E2V_A37474_002
 #error "Multiple boards selected"
 #endif
+#ifdef  Sordina_A37474_950
+#error "Multiple boards selected"
+#endif
 #endif
 
 
@@ -131,6 +143,30 @@
 #define BIAS_OVER_VOLTAGE                       18000        // -180V
 #define BIAS_UNDER_VOLTAGE                      14000        // -140V
 #define BOARD_DASH_NUMBER                       002          // for A37474-002Z
+#ifdef  Sordina_A37474_950
+#error "Multiple boards selected"
+#endif
+#endif
+
+#ifdef Sordina_A37474_950
+#define __MODE_ETHERNET_INTERFACE
+#define __MODE_MODBUS_MONITOR
+#define OLL_PIN_CPU_HV_ENABLE_HV_ENABLED        1
+#define MAX_HEATER_RAMP_UP_TIME                 30000        // 5.0min.  If the heater does not reach it's programed voltage in this time a fault will be generated.
+#define HEATER_RAMP_UP_TIME_PERIOD              30           // 300ms.  During heater ramp up, the heater voltage will be increased every N 10ms.
+#define MAX_PROGRAM_HTR_VOLTAGE                 8000         // 8.0 V.  Limit on what customer can set
+#define HEATER_VOLTAGE_MAX_SET_POINT            8000         // 8.0V.  Actual limit
+#define HEATER_VOLTAGE_MIN_SET_POINT            0            // 0V.  Lower Limit on Heater Voltage
+#define MAX_HEATER_CURRENT_DURING_RAMP_UP       2000         // 2.000 Amps
+#define HTR_OC_ABS                              2200         // 2.200 Amps
+#define HTR_UC_ABS                              0            // 0mA.
+#define HV_MAX_SET_BOARD_SPEC                   16000        // -16KV
+#define HV_MIN_SET_BOARD_SPEC                   0            // -0KV
+#define TOP_MAX_SET_BOARD_SPEC                  18000        // 100V
+#define TOP_MIN_SET_BOARD_SPEC                  0            // -80V
+#define BIAS_OVER_VOLTAGE                       18000        // -180V
+#define BIAS_UNDER_VOLTAGE                      14000        // -140V
+#define BOARD_DASH_NUMBER                       950          // for A37474-950Z
 #endif
 
 /*----------------------------------------------------------------------*/

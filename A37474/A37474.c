@@ -1199,7 +1199,9 @@ void DoA37474(void) {
 #ifdef Altair_A37474_001
 #ifdef AET_A37474_450
 #ifdef E2V_A37474_002
+#ifdef Sordina_A37474_950
         HeaterCurrentLimitedRamp();
+#endif
 #endif
 #endif
 #endif
