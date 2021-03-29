@@ -1200,7 +1200,9 @@ void DoA37474(void) {
 #ifdef AET_A37474_450
 #ifdef E2V_A37474_002
 #ifdef Sordina_A37474_950
+#ifdef Sameer_LongPulse_A37474_110
         HeaterCurrentLimitedRamp();
+#endif
 #endif
 #endif
 #endif
